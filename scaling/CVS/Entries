@@ -1,0 +1,22 @@
+/AnalogAlarmScaling.java/1.8/Thu Nov  2 16:36:16 2023//
+/BasicControlDefs.java/1.4/Thu Nov  2 16:36:16 2023//
+/BasicControlScaling.java/1.6/Thu Nov  2 16:36:16 2023//
+/BasicStatus.java/1.2/Thu Jul  6 19:00:54 2023//
+/BasicStatusScaling.java/1.7/Thu Nov  2 16:36:16 2023//
+/DPMAnalogAlarmScaling.java/1.10/Thu Nov  2 16:36:16 2023//
+/DPMBasicControlScaling.java/1.5/Thu Nov  2 16:36:16 2023//
+/DPMBasicStatusScaling.java/1.7/Thu Nov  2 16:36:16 2023//
+/DPMDigitalAlarmScaling.java/1.8/Thu Nov  2 16:36:16 2023//
+/DPMReadSetScaling.java/1.8/Thu Nov  2 16:36:16 2023//
+/DigitalAlarmScaling.java/1.6/Thu Nov  2 16:36:16 2023//
+/DigitalStatusScaling.java/1.4/Thu Nov  2 16:36:16 2023//
+/EnumeratedStrings.java/1.5/Thu Nov  2 16:36:16 2023//
+/Postgres.java/1.3/Fri Jul  7 20:59:46 2023//
+/ReadSetScaling.java/1.6/Thu Nov  2 16:36:16 2023//
+/ReadSetScalingExt.java/1.3/Thu Nov  2 16:36:16 2023//
+/Scalable.java/1.3/Thu Nov  2 16:36:16 2023//
+/Scaler.java/1.3/Fri Jul  7 21:00:04 2023//
+/Scaling.java/1.8/Thu Nov  2 16:36:16 2023//
+/ScalingFactory.java/1.4/Tue Sep 26 20:52:04 2023//
+/ScalingInternal.java/1.3/Fri Jul 14 19:08:53 2023//
+D
