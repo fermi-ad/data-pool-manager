@@ -28,4 +28,4 @@ git commit -m "Comment for the code"
 git push -u origin new-branch
 ```
 * Go to the web-page and create pull request
-* Add reviewer
+* Add reviewerr
