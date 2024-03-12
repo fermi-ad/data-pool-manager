@@ -1,0 +1,240 @@
+    1  vim /etc/passwd
+    2  ls
+    3  cd ..
+    4  exit
+    5  ll
+    6  id
+    7  exit
+    8  ls
+    9  pwd
+   10  exit
+   11  ls
+   12  pwd
+   13  mkdir dpm-temp
+   14  cd dpm-temp/
+   15  cvs checkout dpm
+   16  ls
+   17  ls -la
+   18  exit
+   19  ls
+   20  ls dpm-temp/
+   21  echo $CVS
+   22  echo $CVSROOT
+   23  export CVSROOT=pserver:amol@adcvs.fnal.gov:/export/cvs/java
+   24  echo $CVSROOT
+   25  cd dpm-temp/
+   26  cvs checkout clear
+   27  clear
+   28  cvs checkout java
+   29  export CVSROOT=:pserver:amol@adcvs.fnal.gov:/export/cvs/java
+   30  echo $CVSROOT
+   31  cvs checkout java
+   32  cvs login
+   33  ls
+   34  cvs login
+   35  export CVSROOT=:pserver:amol@adcvs.fnal.gov:/export/cvs/java
+   36  cvs login
+   37  ls -la
+   38  cvs checkout java
+   39  cvs checkout webstart/jddd_jars
+   40  cvs checkout webstart/jddd_jars/Attic
+   41  history 
+   42  cvs checkout webstart/jddd_jars/Attic
+   43  export CVSROOT=:pserver:amol@adcvs.fnal.gov:/export/cvs/java
+   44  cvs checkout webstart/jddd_jars/Attic
+   45  cvs checkout java
+   46  cvs checkout gov
+   47  ls
+   48  ls gov/
+   49  cvs checkout webstart
+   50  ls
+   51  ls webstart/
+   52  ls
+   53  rm -r webstart
+   54  ls
+   55  rm -r gov
+   56  cd dpm-temp/
+   57  cvs checkout gov/fnal/controls/servers/dpm
+   58  ls
+   59  ls gov/
+   60  ls gov/fnal/controls/servers/dpm/
+   61  cat /proc/cpuinfo | grep processor
+   62  cat /proc/meminfo | greo total
+   63  cat /proc/meminfo | grep total
+   64  cat /proc/meminfo | grep Total
+   65  exit
+   66  ls
+   67  cd dpm-temp/
+   68  ls
+   69  ls gov/fnal/controls/servers/dpm/
+   70  cd ..
+   71  ls
+   72  mkdir dpm
+   73  cd dpm
+   74  git init
+   75  cvs checkout gov/fnal/controls/servers/dpm/
+   76  ls
+   77  cvs checkout gov/fnal/controls/servers/dpm
+   78  export CVSROOT=:pserver:amol@adcvs.fnal.gov:/export/cvs/java
+   79  cvs checkout gov/fnal/controls/servers/dpm
+   80  ls
+   81  ls -l
+   82  ls -la
+   83  cp -r ./gov/fnal/controls/servers/dpm/* ./
+   84  ls
+   85  rm -r gov
+   86  ls
+   87  ls CVS/
+   88  ls
+   89  ls -l
+   90  ls -la
+   91  ls
+   92  cd ..
+   93  git clone https://github.com/fermi-ad/data-pool-manager.git
+   94  ls
+   95  ssh -fN -D 1082 amol@outback
+   96  export HTTP_PROXY='socks5://localhost:1082'
+   97  export HTTPS_PROXY='socks5://localhost:1082'
+   98  export ALL_PROXY='socks5://localhost:1082'
+   99  export http_proxy='socks5://localhost:1082'
+  100  export https_proxy='socks5://localhost:1082'
+  101  export all_proxy='socks5://localhost:1082'
+  102  echo @HTTP_PROXY
+  103  echo $HTTP_PROXY
+  104  git clone https://github.com/fermi-ad/data-pool-manager.git
+  105  ls
+  106  cp -r dpm/* data-pool-manager/
+  107  ls data-pool-manager/
+  108  cd data-pool-manager/
+  109  git remote -v
+  110  git push origin
+  111  git login amol@fnal.gov
+  112  git help
+  113  git push origin
+  114  git config --global user.name "amolfnal"
+  115  git config --global user.email amol@fnal.gov
+  116  git push origin
+  117  cd ..
+  118  ls
+  119  mv dpm dpm-1
+  120  ls
+  121  git clone https://github.com/fermi-ad/dpm.git
+  122  ls
+  123  cd data-pool-manager/
+  124  git add .
+  125  git commit -m "dpm code"
+  126  git push -u origin main
+  127  git status
+  128  git push origin
+  129  history 
+  130  git remote -v
+  131  ls -la
+  132  ls -l
+  133  ls
+  134  ls CVS/
+  135  ls -l CVS/
+  136  cat CVS/Root 
+  137  cat CVS/Repository 
+  138  cat CVS/Entries
+  139  cat CVS/Entries.Log 
+  140  cd ..
+  141  ls
+  142  mv data-pool-manager data-pool-manager-1
+  143  ls
+  144  git clone git@github.com:fermi-ad/data-pool-manager.git
+  145  history 
+  146  ls .ssh/
+  147  ls -l .ssh/
+  148  ls -la
+  149  cat .gitconfig 
+  150  ls .ssh/
+  151  ls .ssh/known_hosts 
+  152  cat .ssh/known_hosts 
+  153  git clone git@github.com:fermi-ad/data-pool-manager.git
+  154  gh auth login
+  155  git --help
+  156  git clone git@github.com:fermi-ad/data-pool-manager.git
+  157  git clone https://github.com/fermi-ad/data-pool-manager.git
+  158  cp -r dpm-1/* data-pool-manager/
+  159  cd data-pool-manager/
+  160  git add .
+  161  rm -r CVS
+  162  git add .
+  163  cd ..
+  164  rm -r data-pool-manager
+  165  clear
+  166  rm -rf data-pool-manager
+  167  git clone git@github.com:fermi-ad/data-pool-manager.git
+  168  git clone https://github.com/fermi-ad/data-pool-manager.git
+  169  ls
+  170  cd data-pool-manager/
+  171  cp -r ../dpm-1/* ./
+  172  rm -rf CVS
+  173  git add .
+  174  git commit -m "DPM code"
+  175  git remote -v
+  176  git push -u origin main
+  177  cd ~
+  178  ls
+  179  ls data-pool-manager-1/
+  180  ls dpm-temp/
+  181  ls dpm-temp/gov/
+  182  ls dpm-temp/gov/fnal/
+  183  ls dpm-temp/gov/fnal/controls/
+  184  ls dpm-temp/gov/fnal/controls/servers/
+  185  ls dpm-temp/gov/fnal/controls/servers/dpm/
+  186  ls /usr/local/dae/
+  187  ls /usr/local/dae/jars/
+  188  ls /usr/local/dae/
+  189  ls /usr/local/dae/releases/
+  190  ls /usr/local/dae/webstart/
+  191  ls /usr/local/dae/engines/
+  192  ls /usr/local/
+  193  ls /usr/local/games/
+  194  ls /usr/local/dae/engines/
+  195  ls /usr/local/dae/gov/
+  196  ls /usr/local/dae/gov/fnal/
+  197  ls /usr/local/dae/gov/fnal/controls/
+  198  ls /usr/local/dae/gov/fnal/controls/applications/
+  199  ls /usr/local/dae/gov/fnal/
+  200  ls /usr/local/dae/gov/fnal/controls/
+  201  ls /usr/local/dae/
+  202  ls /usr/local/etc/daeset/
+  203  ls -l /usr/local/etc/ | grep dae
+  204  ls -l /usr/local/etc/daeset/
+  205  \\
+  206  ls /usr/local/
+  207  ls /usr/local/dae/
+  208  ls /usr/local/dae/releases/
+  209  ls /usr/local/dae/releases/PR-75595/
+  210  ls -l /usr/local/dae/releases/PR-75595/
+  211  ls -la /usr/local/dae/releases/PR-75595/
+  212  ls -la /usr/local/dae/releases/PR-75595/jars/
+  213  ls -la /usr/local/dae/releases/PR-75595/jars/ | grep dpm
+  214  ls -la /usr/local/dae/releases/PR-755*/jars/ | grep dpm
+  215  ls -la /usr/local/dae/releases/PR-*/jars/ | grep dpm
+  216  ls -la /usr/local/dae/releases/PR-75595/
+  217  ls -la /usr/local/dae/releases/PR-75595/org/
+  218  ls -la /usr/local/dae/releases/PR-75595/thinlet/
+  219  ls -la /usr/local/dae/
+  220  ls -la /usr/local/dae/bin/
+  221  ls -la /usr/local/dae/current.version 
+  222  cat /usr/local/dae/current.version 
+  223  ls /usr/local/dae/config/ 
+  224  ls /usr/local/dae/config/files/
+  225  ls -la /usr/local/dae/releases/PR-75595/
+  226  ls
+  227  ls /tmp/
+  228  df -h
+  229  exit
+  230  ls /tmp/
+  231  exit
+  232  python --version
+  233  pwd
+  234  ls
+  235  history 
+  236  history | more
+  237  ls
+  238  cd data-pool-manager
+  239  git pull
+  240  history > history.txt
