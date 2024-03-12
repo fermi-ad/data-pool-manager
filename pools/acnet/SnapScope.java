@@ -1,4 +1,4 @@
-// $Id: SnapScope.java,v 1.5 2023/11/02 17:01:49 kingc Exp $
+// $Id: SnapScope.java,v 1.6 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
@@ -14,89 +14,35 @@ import java.util.StringTokenizer;
 
 class SnapScope implements AcnetErrors
 {
-	/**
-	 * @serial rate in hz
-	 */
-	private int rate;
+	final static int NUM_SAMPLE_EVENTS = 4;
 
-	/**
-	 * @serial duration in seconds
-	 */
-	private double duration;
+	final int rate;
+	final double duration;
+	int points = 0;
+	final boolean ratePreferred; // = false;
+	final boolean durationPreferred; // = false;
+	final byte[] sampleEvents;
+	//final int sampleEventsDelay;
+	final boolean sampleOnClockEvent;// = false;
+	final boolean sampleOnDataSamplePeriod;// = false;
+	final boolean sampleOnExternalSource;// = false;
+	final int sampleTriggerModifier;
 
-	/**
-	 * @serial number of points
-	 */
-	private int points = 0;
-
-	/**
-	 * @serial when rate is preferred
-	 */
-	private boolean ratePreferred = false;
-
-	/**
-	 * @serial when duration is preferred
-	 */
-	private boolean durationPreferred = false;
-
-	/**
-	 * number of supported sample events
-	 */
-	public final static int NUM_SAMPLE_EVENTS = 4;
-
-	/**
-	 * @serial sample events
-	 */
-	private byte[] sampleEvents;
-
-	/**
-	 * @serial sample events delay
-	 */
-	private int sampleEventsDelay;
-
-	/**
-	 * @serial when sampling on clock event
-	 */
-	private boolean sampleOnClockEvent = false;
-
-	/**
-	 * @serial when sampling on rate
-	 */
-	private boolean sampleOnDataSamplePeriod = false;
-
-	/**
-	 * @serial when sampling on external source
-	 */
-	private boolean sampleOnExternalSource = false;
-
-	/**
-	 * @serial external source sample modifier
-	 */
-	private int sampleTriggerModifier;
-
-	/**
-	 * Constructs a SnapScope object describing a preferred snapshot rate.
-	 * 
-	 * @param userRate
-	 *            the user preferred rate in Hertz.
-	 */
-	public SnapScope(int userRate)
+/*
+	SnapScope(int userRate)
 	{
 		this(userRate, 0.0, null, false, false, 0);
+
 		ratePreferred = true;
 	}
 
-	/**
-	 * Constructs a SnapScope object describing a preferred snapshot duration.
-	 * 
-	 * @param userDuration
-	 *            the user preferred duration in seconds.
-	 */
-	public SnapScope(double userDuration)
+	SnapScope(double userDuration)
 	{
 		this(0, userDuration, null, false, false, 0);
+
 		durationPreferred = true;
 	}
+	*/
 
 	/**
 	 * Constructs a SnapScope object describing snapshot sample collection on
@@ -105,10 +51,12 @@ class SnapScope implements AcnetErrors
 	 * @param events
 	 *            the sample clock events.
 	 */
+	 /*
 	SnapScope(byte[] events)
 	{
 		this(0, 0, events, true, false, 0);
 	}
+	*/
 
 	/**
 	 * Constructs a SnapScope object describing snapshot sample collection on an
@@ -117,10 +65,12 @@ class SnapScope implements AcnetErrors
 	 * @param sampleModifier
 	 *            the sample modifier (0-3).
 	 */
+	 /*
 	SnapScope(byte sampleModifier)
 	{
 		this(0, 0, null, false, true, sampleModifier);
 	}
+	*/
 
 	/**
 	 * Constructs a SnapScope object describing snapshot sample collection.
@@ -138,8 +88,9 @@ class SnapScope implements AcnetErrors
 	 * @param sampleModifier
 	 *            the sample modifier (0-3).
 	 */
-	SnapScope(int userRate, double userDuration, byte[] events,
-			boolean onClock, boolean onExternal, int sampleModifier) {
+	 /*
+	SnapScope(int userRate, double userDuration, byte[] events, boolean onClock, boolean onExternal, int sampleModifier)
+	{
 		rate = userRate;
 		duration = userDuration;
 		points = 0;
@@ -158,58 +109,74 @@ class SnapScope implements AcnetErrors
 		else
 			sampleOnDataSamplePeriod = true;
 	}
+	*/
 
-	/**
-	 * Constructs a SnapScope object from a database saved string.
-	 * 
-	 * @param reconstructionString
-	 *            string returned by getReconstruction().
-	 */
-	SnapScope(String reconstructionString) {
-		this(0, 0.0, null, false, false, 0);
-		StringTokenizer tok = null;
-		String token = null;
+	SnapScope(String reconstructionString) throws AcnetStatusException
+	{
+		//this(0, 0.0, null, false, false, 0);
+		this.sampleEvents = new byte[NUM_SAMPLE_EVENTS];
+
 		try {
-			tok = new StringTokenizer(reconstructionString, ",=", false);
+			final StringTokenizer tok = new StringTokenizer(reconstructionString, ",=", false);
 			tok.nextToken(); // skip rate=
-			token = tok.nextToken();
-			rate = (int) Double.parseDouble(token); // allow double
+
+			String token = tok.nextToken();
+
+			this.rate = (int) Double.parseDouble(token); // allow double
 			tok.nextToken(); // skip dur=
 			token = tok.nextToken();
-			duration = Double.parseDouble(token);
+			this.duration = Double.parseDouble(token);
 			tok.nextToken(); // skip npts=
 			token = tok.nextToken();
-			points = Integer.parseInt(token);
+			this.points = Integer.parseInt(token);
 			tok.nextToken(); // skip pref=
 			token = tok.nextToken();
-			if (token.equals("both"))
-				ratePreferred = durationPreferred = true;
-			else if (token.equals("rate"))
-				ratePreferred = true;
-			else if (token.equals("dur"))
-				durationPreferred = true;
+
+			if (token.equals("both")) {
+				this.ratePreferred = true;
+				this.durationPreferred = true;
+			} else if (token.equals("rate")) {
+				this.ratePreferred = true;
+				this.durationPreferred = false;
+			} else if (token.equals("dur")) {
+				this.durationPreferred = true;
+				this.ratePreferred = false;
+			} else {
+				this.durationPreferred = false;
+				this.ratePreferred = false;
+			}
+
 			tok.nextToken(); // skip smpl=
 			token = tok.nextToken();
+
 			if (token.startsWith("e")) {
-				sampleOnClockEvent = true;
+				this.sampleOnClockEvent = true;
+				this.sampleOnDataSamplePeriod = false;
+				this.sampleOnExternalSource = false;
+				this.sampleTriggerModifier = 0;
 				for (int ii = 0; ii < NUM_SAMPLE_EVENTS; ii++) {
-					sampleEvents[ii] = (byte) Integer.parseInt(tok.nextToken(),
-							16);
+					this.sampleEvents[ii] = (byte) Integer.parseInt(tok.nextToken(), 16);
 					if (!tok.hasMoreTokens())
 						break;
 				}
-			} else if (token.startsWith("p"))
-				sampleOnDataSamplePeriod = true;
-			else {
-				sampleOnExternalSource = true;
+			} else if (token.startsWith("p")) {
+				this.sampleOnExternalSource = false;
+				this.sampleOnDataSamplePeriod = true;
+				this.sampleOnClockEvent = false;
+				this.sampleTriggerModifier = 0;
+			} else {
+				this.sampleOnExternalSource = true;
+				this.sampleOnClockEvent = false;
+				this.sampleOnDataSamplePeriod = false;
 				tok.nextToken(); // skip mod=
 				token = tok.nextToken();
-				sampleTriggerModifier = Integer.parseInt(token);
+				this.sampleTriggerModifier = Integer.parseInt(token);
 			}
 		} catch (Exception e) {
-			System.out.println("SnapScope.reconstructionString, "
-					+ reconstructionString + "\n\ntoken: " + token);
-			e.printStackTrace();
+			//System.out.println("SnapScope.reconstructionString, "
+			//		+ reconstructionString + "\n\ntoken: " + token);
+			//e.printStackTrace();
+			throw new AcnetStatusException(DPM_BAD_EVENT);
 		}
 	}
 
@@ -218,7 +185,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return the rate in hz
 	 */
-	int getRate() {
+	int getRate()
+	{
 		return rate;
 	}
 
@@ -227,7 +195,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return the duration in seconds
 	 */
-	double getDuration() {
+	double getDuration()
+	{
 		return duration;
 	}
 
@@ -235,12 +204,17 @@ class SnapScope implements AcnetErrors
 	 * Sets the preferred number of points to collect in a snapshot plot.
 	 * 
 	 * @param numberPoints
-	 *            the number of points to collect.
+	 *   e        the number of points to collect.
 	 */
-	void clipNumberPoints(int numberPoints) {
+	 /*
+	void clipNumberPoints(int numberPoints)
+	{
 		points = numberPoints;
-		if (rate != 0 && duration == 0.0) duration = numberPoints/rate;
+
+		if (rate != 0 && duration == 0.0) 
+			duration = numberPoints/rate;
 	}
+	*/
 
 	/**
 	 * Return the number of points to collect.
@@ -248,7 +222,8 @@ class SnapScope implements AcnetErrors
 	 * @param maxPoints the maximum number of points to collect
 	 * @return the number of points
 	 */
-	int getNumberPoints(int maxPoints) {
+	int getNumberPoints(int maxPoints)
+	{
 		if (points != 0) {
 			if (points > maxPoints)
 				points = maxPoints;
@@ -273,7 +248,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return the number of points
 	 */
-	int getNumberPoints() {
+	int getNumberPoints()
+	{
 		return points;
 	}
 
@@ -336,7 +312,8 @@ class SnapScope implements AcnetErrors
 	 * @return a string describing this SnapScope
 	 */
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return "Rate=" + rate + ", Duration=" + duration + ", points=" + points;
 	}
 
@@ -349,7 +326,8 @@ class SnapScope implements AcnetErrors
 	 *            maximum number of points.
 	 * @return a list of events
 	 */
-	List<DataEvent> snapCollectionEvents(int maxRate, int maxPoints) {
+	List<DataEvent> snapCollectionEvents(int maxRate, int maxPoints)
+	{
 		if (points == 0)
 			points = maxPoints;
 		List<DataEvent> returnedEvents = new LinkedList<DataEvent>();
@@ -381,11 +359,13 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return true if duration is preferred
 	 */
-	boolean isDurationPreferred() {
+	boolean isDurationPreferred()
+	{
 		return durationPreferred;
 	}
 	
-	protected byte[] getSamplingEvents() { 
+	protected byte[] getSamplingEvents()
+	{ 
 		return sampleEvents; 
 	}
 	
@@ -394,7 +374,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return String listing sample events
 	 */
-	String getSampleEvents() {
+	String getSampleEvents()
+	{
 		String events = "0x";
 
 		for (int ii = 0; ii < NUM_SAMPLE_EVENTS; ii++) {
@@ -411,8 +392,10 @@ class SnapScope implements AcnetErrors
      *      the event string
 	 * @return byte[] sample events.
 	 */
-	static byte[] getSampleEventsRaw(String eventString) {
-		byte[] sampleEvents = new byte[NUM_SAMPLE_EVENTS];
+	static int[] getSampleEventsRaw(String eventString)
+	{
+		int[] sampleEvents = new int[NUM_SAMPLE_EVENTS];
+
 		for (int ii = 0; ii < NUM_SAMPLE_EVENTS; ii++)
 			sampleEvents[ii] = ClockTrigger.NULL_EVENT;
 
@@ -425,9 +408,10 @@ class SnapScope implements AcnetErrors
 			int commaAt = nextHexEvent.indexOf(",");
 			if (commaAt > 0)
 				nextHexEvent = nextHexEvent.substring(0, commaAt);
-			sampleEvents[ii++] = (byte) Integer.parseInt(nextHexEvent, 16);
+			sampleEvents[ii++] = Integer.parseInt(nextHexEvent, 16);
 		}
-		return (sampleEvents);
+
+		return sampleEvents;
 	}
 
 	/**
@@ -435,7 +419,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return if sampling is on clock event
 	 */
-	boolean isSampleOnClockEvent() {
+	boolean isSampleOnClockEvent()
+	{
 		return sampleOnClockEvent;
 	}
 
@@ -444,7 +429,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return if sampling is on rate
 	 */
-	boolean isSampleOnDataSamplePeriod() {
+	boolean isSampleOnDataSamplePeriod()
+	{
 		return sampleOnDataSamplePeriod;
 	}
 
@@ -453,7 +439,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return if sampling is on external source
 	 */
-	boolean isSampleOnExternalSource() {
+	boolean isSampleOnExternalSource()
+	{
 		return sampleOnExternalSource;
 	}
 
@@ -462,7 +449,8 @@ class SnapScope implements AcnetErrors
 	 * 
 	 * @return external source sample modifier
 	 */
-	int getSampleTriggerModifier() {
+	int getSampleTriggerModifier()
+	{
 		return sampleTriggerModifier;
 	}
 
@@ -474,8 +462,8 @@ class SnapScope implements AcnetErrors
 	DataEvent durationEvent()
 	{
 		long milliSeconds;
-		if (!durationPreferred) // calculate a time based upon rate
-		{
+
+		if (!durationPreferred) { // calculate a time based upon rate
 			int seconds = points / rate;
 			if (seconds < 10)
 				seconds = 10;
@@ -484,44 +472,48 @@ class SnapScope implements AcnetErrors
 		} else {
 			milliSeconds = (long) (duration * 1000);
 		}
-		DataEvent when = new DeltaTimeEvent(milliSeconds, false);
-		return when;
+
+		return new DeltaTimeEvent(milliSeconds, false);
 	}
 
 	String getReconstructionString()
 	{
-		StringBuffer returnBuffer = new StringBuffer();
-		returnBuffer.append("rate=" + rate + ",dur=" + duration + ",npts="
-				+ points + ",pref=");
+		final StringBuilder buf = new StringBuilder();
+
+		buf.append("rate=" + rate + ",dur=" + duration + ",npts=" + points + ",pref=");
 		if (ratePreferred && durationPreferred)
-			returnBuffer.append("both");
+			buf.append("both");
 		else if (ratePreferred)
-			returnBuffer.append("rate");
+			buf.append("rate");
 		else if (durationPreferred)
-			returnBuffer.append("dur");
+			buf.append("dur");
 		else
-			returnBuffer.append("none");
-		returnBuffer.append(",smpl=");
+			buf.append("none");
+
+		buf.append(",smpl=");
+
 		if (sampleOnClockEvent) {
-			returnBuffer.append("e");
+			buf.append("e");
 			for (int ii = 0; ii < NUM_SAMPLE_EVENTS; ii++) {
-				returnBuffer.append(","
-						+ Integer.toHexString(sampleEvents[ii] & 0xff));
+				buf.append("," + Integer.toHexString(sampleEvents[ii] & 0xff));
 			}
-			returnBuffer.append(sampleEventsDelay);
+			//buf.append(sampleEventsDelay);
 		} else if (sampleOnDataSamplePeriod)
-			returnBuffer.append("p");
+			buf.append("p");
 		else if (sampleOnExternalSource)
-			returnBuffer.append("x,mod=" + sampleTriggerModifier);
-		return returnBuffer.toString();
+			buf.append("x,mod=" + sampleTriggerModifier);
+
+		return buf.toString();
 	}
 
+/*
 	static String getTestSnapShotSpecificationEventString()
 	{
 		return "f,type=snp," + "rate=100,dur=20.48,npts=2048,pref=rate,smpl=p"
 				+ ";" + "trig=e,00,FE,FE,FE,1000" + ";"
 				+ "rearm=true,dly=p,60000,false,nmhr=30";
 	}
+*/
 
 	/**
 	 * Create and return a SnapScope from a scope and trigger string.
@@ -532,25 +524,23 @@ class SnapScope implements AcnetErrors
 	 * @throws AcnetStatusException
 	 *             if the scope is invalid
 	 */
-	static SnapScope getSnapScope(String scopeAndTriggerAndReArm)
-			throws AcnetStatusException {
-		SnapScope scope = null;
+	static SnapScope getSnapScope(String scopeAndTriggerAndReArm) throws AcnetStatusException
+	{
 		try {
-			StringTokenizer tok;
-			String stripPrefix = scopeAndTriggerAndReArm.substring(12); // strip
+			final String stripPrefix = scopeAndTriggerAndReArm.substring(12); // strip
 			// f,type=snp,
 			if (stripPrefix.equals("null"))
 				return null;
-			tok = new StringTokenizer(stripPrefix, ";", false);
-			scope = new SnapScope(tok.nextToken());
+
+			final StringTokenizer tok = new StringTokenizer(stripPrefix, ";", false);
+
+			return new SnapScope(tok.nextToken());
 		} catch (Exception e) {
-			System.out.println("SnapScope.getSnapScope, "
-					+ scopeAndTriggerAndReArm);
-			e.printStackTrace();
-			throw new AcnetStatusException(DPM_BAD_EVENT, "Invalid scope: "
-					+ scopeAndTriggerAndReArm, e);
+			//System.out.println("SnapScope.getSnapScope, "
+			//		+ scopeAndTriggerAndReArm);
+			//e.printStackTrace();
+			throw new AcnetStatusException(DPM_BAD_EVENT, "Invalid scope: " + scopeAndTriggerAndReArm, e);
 		}
-		return scope;
 	}
 
 	/**
@@ -562,34 +552,28 @@ class SnapScope implements AcnetErrors
 	 * @throws AcnetStatusException
 	 *             if the trigger is invalid
 	 */
-	static Trigger getTrigger(String scopeAndTriggerAndReArm)
-			throws AcnetStatusException {
-		Trigger trigger = null;
+	static Trigger getTrigger(String scopeAndTriggerAndReArm) throws AcnetStatusException
+	{
 		try {
-			StringTokenizer tok;
-			String stripPrefix = scopeAndTriggerAndReArm.substring(12); // strip
-			// f,type=snap,
-			tok = new StringTokenizer(stripPrefix, ";", false);
+			String stripPrefix = scopeAndTriggerAndReArm.substring(12); // strip f,type=snap,
+			final StringTokenizer tok = new StringTokenizer(stripPrefix, ";", false);
+
 			tok.nextToken(); // skip SnapScope
-			String triggerString = tok.nextToken();
-			if (triggerString.equals("null"))
-				return null;
-			else if (triggerString.startsWith("trig=d"))
-				trigger = new ExternalTrigger(triggerString);
+			final String triggerString = tok.nextToken();
+
+			if (triggerString.startsWith("trig=d"))
+				return new ExternalTrigger(triggerString);
 			else if (triggerString.startsWith("trig=x"))
-				trigger = new ExternalTrigger(triggerString);
+				return new ExternalTrigger(triggerString);
 			else if (triggerString.startsWith("trig=s"))
-				trigger = new StateTransitionTrigger(triggerString);
+				return new StateTransitionTrigger(triggerString);
 			else if (triggerString.startsWith("trig=e"))
-				trigger = new ClockTrigger(triggerString);
+				return new ClockTrigger(triggerString);
+			else
+				return null;
 		} catch (Exception e) {
-			System.out.println("SnapScope.getTrigger, "
-					+ scopeAndTriggerAndReArm);
-			e.printStackTrace();
-			throw new AcnetStatusException(DPM_BAD_EVENT, "Invalid trigger: "
-					+ scopeAndTriggerAndReArm, e);
+			throw new AcnetStatusException(DPM_BAD_EVENT, "Invalid trigger: " + scopeAndTriggerAndReArm, e);
 		}
-		return trigger;
 	}
 
 	/**
@@ -601,8 +585,8 @@ class SnapScope implements AcnetErrors
 	 * @throws AcnetStatusException
 	 *             if the trigger is invalid
 	 */
-	static ReArm getReArm(String scopeAndTriggerAndReArm)
-			throws AcnetStatusException {
+	static ReArm getReArm(String scopeAndTriggerAndReArm) throws AcnetStatusException
+	{
 		ReArm rearm = null;
 		try {
 			StringTokenizer tok;
@@ -615,11 +599,10 @@ class SnapScope implements AcnetErrors
 			if (!next.equals("null"))
 				rearm = new ReArm(next);
 		} catch (Exception e) {
-			System.out
-					.println("SnapScope.getReArm, " + scopeAndTriggerAndReArm);
-			e.printStackTrace();
-			throw new AcnetStatusException(DPM_BAD_EVENT, "Invalid ReArm: "
-					+ scopeAndTriggerAndReArm, e);
+			//System.out
+			//		.println("SnapScope.getReArm, " + scopeAndTriggerAndReArm);
+			//e.printStackTrace();
+			throw new AcnetStatusException(DPM_BAD_EVENT, "Invalid ReArm: " + scopeAndTriggerAndReArm, e);
 		}
 		return rearm;
 	}

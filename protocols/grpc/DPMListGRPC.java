@@ -1,9 +1,11 @@
-// $Id: DPMListGRPC.java,v 1.10 2023/11/02 16:36:15 kingc Exp $
+// $Id: DPMListGRPC.java,v 1.13 2024/03/06 16:02:16 kingc Exp $
 package gov.fnal.controls.servers.dpm.protocols.grpc;
  
-import java.io.IOException;
+import java.util.Date;
+import java.util.logging.Level;
 import java.util.HashMap;
 import java.util.Collection;
+import java.io.IOException;
 import java.net.InetAddress;
 
 import org.ietf.jgss.GSSException;
@@ -198,6 +200,8 @@ public abstract class DPMListGRPC extends DPMList implements AcnetErrors, DPMPro
 
 		synchronized void sendReply(WhatDaq whatDaq, Reading.Builder reply) 
 		{
+			//System.out.println("gRPC - sendReply() " + (new Date()));
+
 			if (!replier.isReady()) {
 				if (whatDaq.getOption(WhatDaq.Option.FLOW_CONTROL)) {
 					try {
@@ -206,13 +210,15 @@ public abstract class DPMListGRPC extends DPMList implements AcnetErrors, DPMPro
 						dispose();
 					}
 				} else {
-					logger.warning(String.format("%s - slow client, dropping replies", id()));
+					logger.log(Level.WARNING, String.format("%s - slow client, dropping replies", id()));
 					droppedReplyCounter.incrementAndGet();
 					return;
 				}
 			}
 			replyCounter.incrementAndGet();
 			replier.onNext(reply.build());	
+
+			//System.out.println("gRPC - after sendReply() " + (new Date()));
 		}
 	}
 
@@ -229,6 +235,7 @@ public abstract class DPMListGRPC extends DPMList implements AcnetErrors, DPMPro
 		@Override
 		void sendReply(WhatDaq whatDaq, Reading.Builder reply) 
 		{
+			//System.out.println("gRPC - sendReply() " + (new Date()));
 			replier.onNext(reply.build());	
 			replier.onCompleted();
 			dispose(0);

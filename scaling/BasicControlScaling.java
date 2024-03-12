@@ -1,8 +1,9 @@
-// $Id: BasicControlScaling.java,v 1.6 2023/11/02 16:36:16 kingc Exp $
+// $Id: BasicControlScaling.java,v 1.7 2024/01/05 21:31:06 kingc Exp $
 package gov.fnal.controls.servers.dpm.scaling;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
-import gov.fnal.controls.service.proto.Lookup_v2;
+//import gov.fnal.controls.service.proto.Lookup_v2;
+import gov.fnal.controls.servers.dpm.pools.DeviceInfo;
 
 class BasicControlScaling implements Scaling
 {
@@ -26,12 +27,14 @@ class BasicControlScaling implements Scaling
 	final String[] shortText = new String[MAX];
 	final int data[] = new int[MAX];
 
-	BasicControlScaling(Lookup_v2.DeviceInfo dInfo) throws AcnetStatusException
+	//BasicControlScaling(Lookup_v2.DeviceInfo dInfo) throws AcnetStatusException
+	BasicControlScaling(DeviceInfo dInfo) throws AcnetStatusException
 	{
 		if (dInfo.control != null) {
 			int count = 0;
 
-			for (Lookup_v2.ControlAttribute attr : dInfo.control.attributes) {
+			//for (Lookup_v2.ControlAttribute attr : dInfo.control.attributes) {
+			for (DeviceInfo.Control.Attribute attr : dInfo.control.attributes) {
 				final int order = attr.order;
 
 				this.defined[order] = true;		

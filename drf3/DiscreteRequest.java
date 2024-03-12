@@ -1,4 +1,4 @@
-//  $Id: DiscreteRequest.java,v 1.1 2023/10/04 19:13:42 kingc Exp $
+//  $Id: DiscreteRequest.java,v 1.2 2024/01/23 23:34:55 kingc Exp $
 package gov.fnal.controls.servers.dpm.drf3;
 
 import java.util.Objects;
@@ -105,7 +105,7 @@ public class DiscreteRequest extends DataRequest
 
 	public String getDevice()
 	{
-		return device;
+		return deviceUC;
 	}
 
 	public String[] getFields()

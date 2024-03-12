@@ -1,4 +1,4 @@
-// $Id: DPMDigitalAlarmScaling.java,v 1.8 2023/11/02 16:36:16 kingc Exp $
+// $Id: DPMDigitalAlarmScaling.java,v 1.9 2024/01/24 21:15:41 kingc Exp $
 package gov.fnal.controls.servers.dpm.scaling;
 
 import java.nio.ByteBuffer;
@@ -129,11 +129,13 @@ class DPMDigitalAlarmScalingImpl extends DigitalAlarmScaling implements DPMDigit
 		throw new AcnetStatusException(DIO_NOSCALE);
 	}
 */
+/*
 	@Override
 	public double scale(ByteBuffer data) throws AcnetStatusException
 	{
 		return scale(data);
 	}
+	*/
 
 	@Override
 	public double scale(byte[] data, int offset) throws AcnetStatusException

@@ -1,4 +1,4 @@
-// $Id: BufferCache.java,v 1.2 2023/12/13 17:04:49 kingc Exp $
+// $Id: BufferCache.java,v 1.3 2024/02/22 16:29:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.io.IOException;
@@ -11,10 +11,6 @@ import java.nio.ByteOrder;
 import java.util.LinkedList;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
-
-import static gov.fnal.controls.servers.dpm.DPMServer.logger;
-
-import gov.fnal.controls.servers.dpm.pools.Node;
 
 abstract class Buffer
 {
@@ -158,7 +154,6 @@ abstract class Buffer
 final class BufferCache
 {
 	static final int BufferSize = 64 * 1024;
-    //static final Logger logger = Logger.getLogger(BufferCache.class.getName()); 
 
 	private static class CachedBuffer extends Buffer
 	{
@@ -183,7 +178,7 @@ final class BufferCache
 					freeList.add(this);
 					//logger.log(Level.FINER, () -> "BufferCache.free[allocated:" + allocatedCount + " free:" + freeList.size() + "]");
 				} else {
-					logger.log(Level.WARNING, () -> "BufferCache.free[bufNo:" + bufNo + " inUse:" + inUse + "]");
+					AcnetInterface.logger.log(Level.WARNING, () -> "BufferCache.free[bufNo:" + bufNo + " inUse:" + inUse + "]");
 					Thread.dumpStack();
 				}		
 			}
@@ -215,13 +210,13 @@ final class BufferCache
 	{
 		if (freeList.isEmpty()) {
 			allocatedCount++;
-			logger.log(Level.FINER, () -> "BufferCache.alloc(new)[allocated:" + allocatedCount + " free:" + freeList.size() + "]");
+			AcnetInterface.logger.log(Level.FINER, () -> "BufferCache.alloc(new)[allocated:" + allocatedCount + " free:" + freeList.size() + "]");
 
 			return new CachedBuffer(ByteBuffer.allocateDirect(BufferSize).order(ByteOrder.LITTLE_ENDIAN));
 		} else {
 			final CachedBuffer buf = freeList.remove();
 
-			logger.log(Level.FINER, () -> "BufferCache.alloc(free)[allocated:" + allocatedCount + " free:" + freeList.size() + "]");
+			AcnetInterface.logger.log(Level.FINER, () -> "BufferCache.alloc(free)[allocated:" + allocatedCount + " free:" + freeList.size() + "]");
 
 			buf.inUse = true;
 			return buf;

@@ -1,8 +1,8 @@
-// $Id: DaqDefinitions.java,v 1.6 2023/12/13 17:04:49 kingc Exp $
+// $Id: DaqDefinitions.java,v 1.7 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
-import gov.fnal.controls.servers.dpm.pools.Node;
-import gov.fnal.controls.servers.dpm.pools.NodeFlags;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
+import gov.fnal.controls.servers.dpm.acnetlib.NodeFlags;
 
 abstract class DaqDefinitions implements NodeFlags
 {

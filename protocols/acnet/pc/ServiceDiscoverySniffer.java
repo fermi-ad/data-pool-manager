@@ -1,6 +1,7 @@
 import gov.fnal.controls.service.proto.DPM;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetCancel;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetRequest;
+import gov.fnal.controls.servers.dpm.acnetlib.AcnetInterface;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetConnection;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetRequestHandler;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
@@ -15,7 +16,7 @@ public class ServiceDiscoverySniffer implements AcnetRequestHandler
 	
 	ServiceDiscoverySniffer(String name) throws AcnetStatusException
 	{
-		this.acnet = AcnetConnection.open(name);
+		this.acnet = AcnetInterface.open(name);
 		this.startTime = System.currentTimeMillis();
 		this.acnet.handleRequests(this);
 	}

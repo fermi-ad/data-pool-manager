@@ -1,13 +1,14 @@
-// $Id: DaqPool.java,v 1.7 2023/11/01 20:56:57 kingc Exp $
+// $Id: DaqPool.java,v 1.9 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.HashMap;
 import java.util.TreeMap;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
-import gov.fnal.controls.servers.dpm.pools.Node;
 import gov.fnal.controls.servers.dpm.events.DataEvent;
+import gov.fnal.controls.servers.dpm.events.DeltaTimeEvent;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 
 abstract class DaqPool implements DaqPoolUserRequests<WhatDaq>
@@ -46,6 +47,21 @@ abstract class DaqPool implements DaqPoolUserRequests<WhatDaq>
 			DaqPool pool = pools.get(key);
 
 			if (pool == null) {
+/*
+				if (event instanceof DeltaTimeEvent) {
+					//final DeltaTimeEvent dtEvent = (DeltaTimeEvent) event;
+					final long repeatRate = ((DeltaTimeEvent) event).getRepeatRate();
+
+					if (repeatRate >= 20000) {
+						final long delayTime = ((DeltaTimeEvent) event).immediate() ? 0 : repeatRate;
+
+						pool = new RepetitiveMultiShotPool(node, delayTime, repeatRate);
+						pools.put(key, pool);
+						return pool;
+					}
+				}
+*/
+
 				pool = new RepetitiveDaqPool(node, event);
 				pools.put(key, pool);
 			}
@@ -61,7 +77,7 @@ abstract class DaqPool implements DaqPoolUserRequests<WhatDaq>
 
     static String dumpPools()
 	{
-		final String dash50 = "--------------------------------------------------";
+		final String dash50 = "-----------------------------------------------------------";
 		final TreeMap<String, DaqPool> map = new TreeMap<>();
 
 		synchronized (pools) {

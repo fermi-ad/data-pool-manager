@@ -1,10 +1,11 @@
-// $Id: DigitalAlarmScaling.java,v 1.6 2023/11/02 16:36:16 kingc Exp $
+// $Id: DigitalAlarmScaling.java,v 1.7 2024/01/05 21:31:06 kingc Exp $
 package gov.fnal.controls.servers.dpm.scaling;
 
 import java.nio.ByteBuffer;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
-import gov.fnal.controls.service.proto.Lookup_v2;
+//import gov.fnal.controls.service.proto.Lookup_v2;
+import gov.fnal.controls.servers.dpm.pools.DeviceInfo;
 
 class DigitalAlarmScaling implements Scaling
 {
@@ -16,7 +17,8 @@ class DigitalAlarmScaling implements Scaling
 	int triesNeeded = 0;
 	int triesNow = 0;
 
-	DigitalAlarmScaling(Lookup_v2.DeviceInfo dInfo) throws AcnetStatusException
+	//DigitalAlarmScaling(Lookup_v2.DeviceInfo dInfo) throws AcnetStatusException
+	DigitalAlarmScaling(DeviceInfo dInfo) throws AcnetStatusException
 	{
 		if (dInfo.digitalAlarm == null)
 			throw new AcnetStatusException(DIO_NOSCALE);

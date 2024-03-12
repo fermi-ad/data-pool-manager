@@ -1,7 +1,7 @@
-//  $Id: FullRange.java,v 1.1 2023/10/04 19:38:05 kingc Exp $
+//  $Id: FullRange.java,v 1.2 2024/03/05 17:19:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.drf3;
 
-public class FullRange extends Range 
+public class FullRange extends Range
 {
     public FullRange() {}
 

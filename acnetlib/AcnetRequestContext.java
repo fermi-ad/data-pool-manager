@@ -1,14 +1,16 @@
-// $Id: AcnetRequestContext.java,v 1.2 2023/12/13 17:04:49 kingc Exp $
+// $Id: AcnetRequestContext.java,v 1.4 2024/03/06 15:35:09 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicReference;
 
-import gov.fnal.controls.servers.dpm.pools.Node;
-
-final public class AcnetRequestContext implements AcnetConstants, AcnetErrors
+final public class AcnetRequestContext implements AcnetConstants, AcnetErrors, AcnetReplyHandler
 {
-	final AtomicReference<AcnetConnection> connection;
+	final static Timer timeoutTimer = new Timer("Request timeout timer");
+
+	//final AtomicReference<AcnetConnection> connection;
+	volatile AcnetConnection connection;
 	final String task;
 	final int taskId;
 	final Node node;
@@ -16,72 +18,87 @@ final public class AcnetRequestContext implements AcnetConstants, AcnetErrors
 	final boolean isMult;
 	final long timeout;
 
-	//ByteBuffer data;
+	volatile AcnetReplyHandler replyHandler;
+	volatile TimeoutTask timeoutTask;
 
-	protected volatile AcnetReplyHandler replyHandler;
+	class TimeoutTask extends TimerTask
+	{
+		@Override
+		public void run()
+		{
+			if (replyHandler != null)
+				replyHandler.handle(new AcnetReply(ACNET_UTIME, requestId, node.value(), !isMult));
+		}
+	}
 
 	public AcnetRequestContext()
 	{
-		this.connection = new AtomicReference<>();
+		//this.connection = new AtomicReference<>();
+		this.connection = null;
 		this.task = "";
 		this.taskId = -1;
 		this.node = null;
 		this.requestId = new RequestId(0);
 		this.isMult = false;
 		this.timeout = -1;
-		this.replyHandler = null;
+		this.replyHandler = this;
+		this.timeoutTask = null;
 	}
 
-/*
-    AcnetRequestContext(AcnetConnection c, int reqid, int node, AcnetReplyHandler replyHandler) 
+	@Override
+	public void handle(AcnetReply reply) { }
+
+	synchronized void startTimeoutTimer()
 	{
-		this.c = new AtomicReference<>(c);
-		this.requestId = new RequestId(reqid);
-		this.node = node;
-		this.replyHandler = replyHandler;
-    }
-	*/
+		if (timeoutTimer != null)
+			timeoutTimer.cancel();
+
+		timeoutTask = new TimeoutTask();
+		timeoutTimer.schedule(timeoutTask, timeout);
+	}
+
+	synchronized void stopTimeoutTimer()
+	{
+		if (timeoutTimer != null) {
+			timeoutTask.cancel();
+			timeoutTask = null;
+		}
+	}
 
     AcnetRequestContext(AcnetConnection connection, String task, int node, RequestId requestId, boolean isMult, long timeout, AcnetReplyHandler replyHandler) throws AcnetStatusException
 	{
-		//System.out.println("create new acnet request context 1");
-
-		this.connection = new AtomicReference<>(connection);
+		//this.connection = new AtomicReference<>(connection);
+		this.connection = connection;
 		this.task = task;
 		this.taskId = connection.taskId;
-		//System.out.println("create new acnet request context 2");
 		this.node = Node.get(node);
-		//System.out.println("create new acnet request context 3");
 		this.requestId = requestId;
 		this.isMult = isMult;
 		this.timeout = timeout;
 		this.replyHandler = replyHandler;
-
-		//System.out.println("create new acnet request context 5");
+		this.timeoutTask = null;
     }
 
 	int taskId() throws AcnetStatusException
 	{
-		final AcnetConnection cLocal = connection.get();
+		//final AcnetConnection cLocal = connection.get();
+		final AcnetConnection c = connection;
 		
-		if (cLocal != null)
-			return cLocal.taskId;
+		if (c != null)
+			return c.taskId;
 
 		throw new AcnetStatusException(ACNET_NO_SUCH);
 	}
 
 	void sendEndMult()
 	{
-		//final AcnetConnection cLocal = c.getAndSet(null);
-
-		//if (cLocal != null)
-		//	replyHandler.handle(new AcnetReply(cLocal, ACNET_ENDMULT, requestId, node.value()));
-		replyHandler.handle(new AcnetReply(ACNET_ENDMULT, requestId, node.value()));
+		replyHandler.handle(new AcnetReply(ACNET_ENDMULT, requestId, node.value(), true));
 	}
 	
 	void localCancel()
 	{
-		connection.set(null);
+		connection = null;
+		//connection.set(null);
 	}
 
 	public void setReplyHandler(AcnetReplyHandler replyHandler)
@@ -101,15 +118,17 @@ final public class AcnetRequestContext implements AcnetConstants, AcnetErrors
 
     public boolean isCancelled() 
 	{
-		return connection.get() == null;
+		return connection == null;
+		//return connection.get() == null;
     }
 
     public void cancel() throws AcnetStatusException 
 	{
-		final AcnetConnection cLocal = connection.getAndSet(null);
+		//final AcnetConnection cLocal = connection.getAndSet(null);
+		final AcnetConnection c = connection;
 
-		if (cLocal != null)
-			cLocal.sendCancel(this);
+		if (c != null)
+			c.sendCancel(this);
     }
 
 	public void cancelNoEx()

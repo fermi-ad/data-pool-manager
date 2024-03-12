@@ -1,9 +1,9 @@
-// $Id: DeviceDatabaseListObserver.java,v 1.1 2022/11/01 20:40:57 kingc Exp $
-package gov.fnal.controls.servers.dpm.events;
+// $Id: DeviceDatabaseListObserver.java,v 1.2 2024/01/05 21:31:50 kingc Exp $
+//package gov.fnal.controls.servers.dpm.events;
 
-import gov.fnal.controls.service.proto.Dbnews;
+//import gov.fnal.controls.service.proto.Dbnews;
 
-public interface DeviceDatabaseListObserver
-{
-	void deviceDatabaseListChange(Dbnews.Request.Info[] dbnews);
-}
+//public interface DeviceDatabaseListObserver
+//{
+//	void deviceDatabaseListChange(Dbnews.Request.Info[] dbnews);
+//}

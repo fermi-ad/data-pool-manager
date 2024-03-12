@@ -1,4 +1,4 @@
-// $Id: EpicsPoolImpl.java,v 1.9 2023/11/02 16:36:15 kingc Exp $
+// $Id: EpicsPoolImpl.java,v 1.10 2024/02/22 16:33:02 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.epics;
 
 import java.util.HashMap;
@@ -12,6 +12,8 @@ import java.time.Instant;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
+
 import gov.fnal.controls.service.proto.DPM;
 
 import gov.fnal.controls.servers.dpm.SettingData;
@@ -19,7 +21,6 @@ import gov.fnal.controls.servers.dpm.pools.ReceiveData;
 import gov.fnal.controls.servers.dpm.pools.PoolType;
 import gov.fnal.controls.servers.dpm.pools.PoolInterface;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
-import gov.fnal.controls.servers.dpm.pools.Node;
 import gov.fnal.controls.servers.dpm.scaling.ScalingFactory;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;

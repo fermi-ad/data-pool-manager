@@ -1,4 +1,4 @@
-// $Id: FTPPoolImpl.java,v 1.13 2023/11/01 20:56:57 kingc Exp $
+// $Id: FTPPoolImpl.java,v 1.16 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Set;
@@ -11,9 +11,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
+import java.nio.ByteBuffer;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
 import gov.fnal.controls.servers.dpm.events.DataEvent;
 import gov.fnal.controls.servers.dpm.events.DeltaTimeEvent;
@@ -25,7 +27,6 @@ import gov.fnal.controls.servers.dpm.pools.PoolUser;
 import gov.fnal.controls.servers.dpm.pools.PoolType;
 import gov.fnal.controls.servers.dpm.pools.PoolInterface;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
-import gov.fnal.controls.servers.dpm.pools.Node;
 import gov.fnal.controls.servers.dpm.pools.ReceiveData;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
@@ -219,35 +220,66 @@ public class FTPPoolImpl implements PoolInterface, SettingData.Handler, AcnetErr
 		}
 
 		@Override
-		//public void receiveData(WhatDaq whatDaq, int error, int offset, byte[] data, 
-		//							long timestamp, CollectionContext context)
-		public void receiveData(int error, int offset, byte[] data, long timestamp)
+		public void receiveData(ByteBuffer buf, long timestamp, long cycle)
 		{
 			final long now = System.currentTimeMillis();
 
 			try {
-				if (error != 0)
-					//callback.plotData(whatDaq, timestamp, context, error, 0,
-					//						null, null, null);
-					callback.plotData(timestamp, error, 0, null, null, null);
-				else {
+				micros[pointCount] = timestamp * 1000;
+				//values[pointCount] = whatDaq.getScaled(data, offset); 
+				//values[pointCount] = scaling.rawToCommon(data, offset); 
+				//byte[] data = new byte[whatDaq.length()];
 
-					micros[pointCount] = timestamp * 1000;
-					//values[pointCount] = whatDaq.getScaled(data, offset); 
-					//values[pointCount] = scaling.rawToCommon(data, offset); 
-					values[pointCount] = scaling.scale(data, offset); 
+				values[pointCount] = scaling.scale(buf); 
 
-					pointCount++;
+				pointCount++;
 
-					if (pointCount == micros.length || (now - lastSend) >= 335) {
-						//callback.plotData(whatDaq, micros[0] / 1000, context, error, 
-						//					pointCount, Arrays.copyOf(micros, pointCount), null, 
-						//					Arrays.copyOf(values, pointCount));
-						callback.plotData(micros[0] / 1000, error, pointCount, 
-											Arrays.copyOf(micros, pointCount), null, Arrays.copyOf(values, pointCount));
-						lastSend = now;
-						pointCount = 0;
-					}
+				if (pointCount == micros.length || (now - lastSend) >= 335) {
+					//callback.plotData(whatDaq, micros[0] / 1000, context, error, 
+					//					pointCount, Arrays.copyOf(micros, pointCount), null, 
+					//					Arrays.copyOf(values, pointCount));
+					callback.plotData(micros[0] / 1000, 0, pointCount, Arrays.copyOf(micros, pointCount), null, Arrays.copyOf(values, pointCount));
+					lastSend = now;
+					pointCount = 0;
+				}
+			} catch (AcnetStatusException e) {
+				//callback.plotData(null, System.currentTimeMillis(), null, e.status, 0, null, null, null);
+				callback.plotData(now, e.status, 0, null, null, null);
+			} catch (Exception e) {
+				callback.plotData(now, ACNET_NXE, 0, null, null, null);
+				logger.log(Level.WARNING, "exception delivering plot data", e);
+			}
+		}
+
+		@Override
+		public void receiveStatus(int status, long timestamp, long cycle)
+		{
+			callback.plotData(timestamp, status, 0, null, null, null);
+		}
+
+		@Override
+		//public void receiveData(WhatDaq whatDaq, int error, int offset, byte[] data, 
+		//							long timestamp, CollectionContext context)
+		//public void receiveData(int error, int offset, byte[] data, long timestamp)
+		public void receiveData(byte[] data, int offset, long timestamp, long cycle)
+		{
+			final long now = System.currentTimeMillis();
+
+			try {
+				micros[pointCount] = timestamp * 1000;
+				//values[pointCount] = whatDaq.getScaled(data, offset); 
+				//values[pointCount] = scaling.rawToCommon(data, offset); 
+				values[pointCount] = scaling.scale(data, offset); 
+
+				pointCount++;
+
+				if (pointCount == micros.length || (now - lastSend) >= 335) {
+					//callback.plotData(whatDaq, micros[0] / 1000, context, error, 
+					//					pointCount, Arrays.copyOf(micros, pointCount), null, 
+					//					Arrays.copyOf(values, pointCount));
+					callback.plotData(micros[0] / 1000, 0, pointCount, Arrays.copyOf(micros, pointCount), null, Arrays.copyOf(values, pointCount));
+					lastSend = now;
+					pointCount = 0;
 				}
 			} catch (AcnetStatusException e) {
 				//callback.plotData(null, System.currentTimeMillis(), null, e.status, 0, null, null, null);

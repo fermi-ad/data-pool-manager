@@ -1,10 +1,11 @@
-// $Id: DeltaTimeThread.java,v 1.3 2023/09/26 20:52:04 kingc Exp $
-package gov.fnal.controls.servers.dpm.events;
+// $Id: DeltaTimeThread.java,v 1.4 2024/01/10 20:57:18 kingc Exp $
+//package gov.fnal.controls.servers.dpm.events;
 
 /**
  * This class provides for the delta time event thread.
  * @author Cahill
  */
+ /*
 public class DeltaTimeThread extends Thread
 {
     protected DataEventObserver observer;
@@ -145,3 +146,4 @@ public class DeltaTimeThread extends Thread
 		event.removeThread(this);
 	}
 }
+*/

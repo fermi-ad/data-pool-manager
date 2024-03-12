@@ -1,7 +1,7 @@
-//  $Id: Event.java,v 1.1 2023/10/04 19:13:42 kingc Exp $
+//  $Id: Event.java,v 1.2 2024/03/05 17:19:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.drf3;
 
-public abstract class Event
+public abstract class Event implements Comparable<Event>
 {
     public static Event parse(String str) throws EventFormatException
 	{
@@ -36,4 +36,10 @@ public abstract class Event
     }
 
     protected Event() {}
+
+	@Override
+	public int compareTo(Event event)
+	{
+		return toString().compareTo(event.toString());
+	}
 }

@@ -1,4 +1,4 @@
-// $Id: DPMCredentials.java,v 1.12 2023/06/20 20:54:25 kingc Exp $
+// $Id: DPMCredentials.java,v 1.14 2024/03/04 16:54:02 kingc Exp $
 package gov.fnal.controls.servers.dpm;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
@@ -26,7 +26,34 @@ public class DPMCredentials
 {
     private static final Pattern PRINCIPAL_NAME_PATTERN = Pattern.compile("^(.*?)/([^/]+)@.+$");
 
-	static final private List<KerberosPrincipal> kerberosServicePrincipals = new ArrayList<>();
+	static private volatile List<KerberosPrincipal> kerberosServicePrincipals = new ArrayList<>();
+
+	private static void login(Level level)
+	{
+		final KerberosLoginContext kerberosLoginContext = KerberosLoginContext.getInstance();
+
+		logger.log(level, "Kerberos login begin");
+	
+		final long begin = System.currentTimeMillis();
+
+		try {
+			kerberosLoginContext.login();
+
+			kerberosServicePrincipals.clear();
+
+			final List<KerberosPrincipal> tmp = new ArrayList<>();
+
+			for (KerberosPrincipal kerberosPrincipal : kerberosLoginContext.getSubject().getPrincipals(KerberosPrincipal.class)) {
+				tmp.add(kerberosPrincipal);
+			}
+
+			kerberosServicePrincipals = tmp;
+
+			logger.log(level, "Kerberos login successful in " + (System.currentTimeMillis() - begin) + "ms");
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Kerberos login failed", e);
+		}
+	}
 
 	static void init()
 	{
@@ -35,16 +62,7 @@ public class DPMCredentials
 		if (System.getProperty("gov.fnal.controls.kerberos.keytab") == null)
 			System.setProperty("gov.fnal.controls.kerberos.keytab", "/usr/local/etc/daeset");
 
-		final KerberosLoginContext kerberosLoginContext = KerberosLoginContext.getInstance();
-
-		try {
-			kerberosLoginContext.login();
-
-			for (KerberosPrincipal kerberosPrincipal : kerberosLoginContext.getSubject().getPrincipals(KerberosPrincipal.class))
-				kerberosServicePrincipals.add(kerberosPrincipal);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "kerberos login failed", e);
-		}
+		login(Level.CONFIG);
 	}
 
 	private DPMCredentials() { }
@@ -65,7 +83,13 @@ public class DPMCredentials
 
 		logger.log(Level.FINE, "service name: '" + name + "'");
 
-		return manager.createName(name, GSSName.NT_HOSTBASED_SERVICE);
+		try {
+			return manager.createName(name, GSSName.NT_HOSTBASED_SERVICE);
+		} catch (GSSException e) {
+			logger.log(Level.WARNING, "exception in serverName()", e);
+			login(Level.FINE);
+			return manager.createName(name, GSSName.NT_HOSTBASED_SERVICE);
+		}
 	}
 
 	static GSSContext createContext() throws GSSException
@@ -75,7 +99,28 @@ public class DPMCredentials
 		if (kerberosServicePrincipals.isEmpty())
 			throw new GSSException(GSSException.NO_CRED);
 
-		return kerberosLoginContext.createAcceptorContext(new ServiceName(kerberosServicePrincipals.get(0)));
+		final ServiceName serviceName = new ServiceName(kerberosServicePrincipals.get(0));
+
+		logger.log(Level.FINE, "Subject: " + kerberosLoginContext.getSubject());
+
+		try {
+			return kerberosLoginContext.createAcceptorContext(serviceName);
+		} catch (GSSException e) {
+			logger.log(Level.WARNING, "exception in createContext()", e);
+			login(Level.FINE);
+			return kerberosLoginContext.createAcceptorContext(serviceName);
+		}
+	}
+
+	static byte[] accept(GSSContext gss, byte[] token) throws GSSException
+	{
+		try {
+			return gss.acceptSecContext(token, 0, token.length);
+		} catch (GSSException e) {
+			logger.log(Level.WARNING, "exception in accept()", e);
+			login(Level.FINE);
+			return gss.acceptSecContext(token, 0, token.length);
+		}
 	}
 
 	@Override

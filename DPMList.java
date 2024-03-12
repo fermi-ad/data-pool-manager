@@ -1,4 +1,4 @@
-// $Id: DPMList.java,v 1.75 2023/11/02 16:36:15 kingc Exp $
+// $Id: DPMList.java,v 1.80 2024/03/06 15:42:45 kingc Exp $
 package gov.fnal.controls.servers.dpm;
  
 import java.io.IOException;
@@ -35,6 +35,8 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 {
 	static final Timer timer = new Timer("DPMListStats", true);
 	static final IdPool idPool = new IdPool(4096, 2048);
+
+	static volatile long totalRequestCount = 0;
 
 	abstract public String clientHostName();
 	abstract public InetAddress fromHostAddress() throws AcnetStatusException;
@@ -361,7 +363,8 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 			jobs.put(req.model(), jInfo);
 		}
 
-		jInfo.addRequest(refId, req);
+		if (jInfo.addRequest(refId, req))
+			totalRequestCount++;
 	}
 
 	private void removeFromJob(long refId, DPMRequest req)
@@ -418,7 +421,8 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 			try {
 				if (gss == null)
 					gss = DPMCredentials.createContext();
-				token = gss.acceptSecContext(token, 0, token.length);
+				//token = gss.acceptSecContext(token, 0, token.length);
+				token = DPMCredentials.accept(gss, token);
 			} catch (GSSException e) {
 				authenticationFailed(DPM_PRIV, e, protocolReplier);
 			}
@@ -427,7 +431,7 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 			if (gss != null && gss.isEstablished()) {
 				try {
 					logger.log(Level.INFO, String.format("%s User %s authenticated from %s for service %s", 
-												id, gss.getSrcName(), clientHostName(), gss.getTargName()));
+															id, gss.getSrcName(), clientHostName(), gss.getTargName()));
 					protocolReplier.sendReply(new AuthenticateReply(DPMCredentials.serviceName().toString()));
 				} catch (GSSException e) {
 					authenticationFailed(DPM_PRIV, e, protocolReplier);
@@ -473,13 +477,10 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 
 		try {
 			if (gss != null) {
-				gss.verifyMIC(MIC, 0, MIC.length, message, 0, 
-								message.length, new MessageProp(true));
-
+				gss.verifyMIC(MIC, 0, MIC.length, message, 0, message.length, new MessageProp(true));
 				gssName = gss.getSrcName();
 				logger.log(Level.INFO, String.format("%s Settings enabled for user %s from %s", 
-												id, gssName, clientHostName()));		
-
+														id, gssName, clientHostName()));		
 			}
 
 			protocolReplier.sendReplyNoEx(0L, 0, 0, -1L);
@@ -496,7 +497,6 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 
 	public void addRequest(String drf, long refId)
 	{
-
 		try {
 			// Check for list property format.  This will eventually be removed
 			// when an actual message is added to the protocol for properties.
@@ -554,6 +554,16 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 	public int requestCount()
 	{
 		return requests.size();
+	}
+
+	public int whatDaqCount()
+	{
+		int count = 0;
+
+		for (JobInfo jInfo : jobs.values())
+			count += jInfo.whatDaqs().size();
+
+		return count;
 	}
 
 	public void start(String newDefaultModel)
@@ -626,9 +636,7 @@ public abstract class DPMList implements AcnetErrors, TimeNow
 
     public boolean allowPrivilegedSettings()
     {
-		return true;
-        //return isFromPrivilegedHost() && 
-         //       (hasStandardConsoleProperties() || hasDaqUserProperties());
+        return isFromPrivilegedHost() && (hasStandardConsoleProperties() || hasDaqUserProperties());
     }
 
 	public ConsoleUser getAuthenticatedUser() throws AcnetStatusException

@@ -1,11 +1,12 @@
-// $Id: Scaling.java,v 1.8 2023/11/02 16:36:16 kingc Exp $
+// $Id: Scaling.java,v 1.9 2024/01/05 21:31:06 kingc Exp $
 package gov.fnal.controls.servers.dpm.scaling;
 
 import java.nio.ByteBuffer;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
-import gov.fnal.controls.service.proto.Lookup_v2;
+//import gov.fnal.controls.service.proto.Lookup_v2;
+import gov.fnal.controls.servers.dpm.pools.DeviceInfo;
 
 import gov.fnal.controls.servers.dpm.drf3.Property;
 
@@ -103,7 +104,8 @@ public interface Scaling extends AcnetErrors
 			return data.getInt();
 	}
 
-	public static boolean usesStrings(Lookup_v2.DeviceInfo dInfo, Property prop)
+	//public static boolean usesStrings(Lookup_v2.DeviceInfo dInfo, Property prop)
+	public static boolean usesStrings(DeviceInfo dInfo, Property prop)
 	{
 		if (prop == Property.READING && dInfo.reading != null && dInfo.reading.scaling != null)
 			return dInfo.reading.scaling.primary.index == 68;

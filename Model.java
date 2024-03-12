@@ -1,4 +1,4 @@
-// $Id: Model.java,v 1.32 2023/11/02 16:36:15 kingc Exp $
+// $Id: Model.java,v 1.34 2024/03/05 17:49:05 kingc Exp $
 package gov.fnal.controls.servers.dpm;
  
 import java.util.Map;
@@ -12,12 +12,11 @@ import org.ietf.jgss.GSSName;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
-
-import gov.fnal.controls.servers.dpm.pools.Node;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
-abstract class Model implements AcnetErrors
+abstract class Model implements AcnetErrors, Comparable<Model>
 {
 	boolean restartable()
 	{
@@ -37,6 +36,12 @@ abstract class Model implements AcnetErrors
 		logger.info("contains: " + s.contains(new RedirectModel("XMLRPC", "DCE46")));
 		logger.info("contains: " + s.contains(new RedirectModel("XMLRPC", "DCE46")));
 		logger.info("contains: " + s.contains(new SavefileModel(301)));
+	}
+
+	@Override
+	public int compareTo(Model model)
+	{
+		return toString().compareTo(model.toString());
 	}
 }
 
@@ -190,7 +195,7 @@ class LiveDataModel extends JobModel
 	@Override
 	public String toString()
 	{
-		return "Live Data";
+		return "LiveData";
 	}
 }
 

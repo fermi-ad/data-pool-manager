@@ -1,4 +1,4 @@
-// $Id: PlotClassCode.java,v 1.9 2023/12/13 17:04:49 kingc Exp $
+// $Id: PlotClassCode.java,v 1.10 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Iterator;
@@ -13,10 +13,10 @@ import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetConnection;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetReply;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetReplyHandler;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
+import gov.fnal.controls.servers.dpm.acnetlib.NodeFlags;
 
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
-import gov.fnal.controls.servers.dpm.pools.Node;
-import gov.fnal.controls.servers.dpm.pools.NodeFlags;
 
 
 class PlotClassCode implements NodeFlags, AcnetErrors 

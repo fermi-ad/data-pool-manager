@@ -1,10 +1,11 @@
-// $Id: TimeStamper.java,v 1.5 2023/10/04 19:40:29 kingc Exp $
+// $Id: TimeStamper.java,v 1.7 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import gov.fnal.controls.servers.dpm.events.ClockEvent;
 import gov.fnal.controls.servers.dpm.events.DataEvent;
 import gov.fnal.controls.servers.dpm.events.DataEventObserver;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TimeZone;
@@ -117,7 +118,8 @@ class TimeStamper implements DataEventObserver
     /**
      * Create a time stamper.
      */
-    private TimeStamper() {
+    private TimeStamper()
+	{
         currentTS = previousTS = currentSC = previousSC = System.currentTimeMillis();
         superCycleEvent = new ClockEvent(0);
         timeStampEvent = new ClockEvent(2);
@@ -127,7 +129,8 @@ class TimeStamper implements DataEventObserver
         fifteenHertzEvent.addObserver(this);
     }
 
-    public static long getCurrentSuperCycle() {
+    public static long getCurrentSuperCycle()
+	{
         return currentSC;
     }
 
@@ -141,7 +144,8 @@ class TimeStamper implements DataEventObserver
         return clocksAreSynched;
     }
 
-    static int secsTicksInSuperCycle(int ticks) {
+    static int secsTicksInSuperCycle(int ticks)
+	{
         final long now = System.currentTimeMillis();
 
         synchronized (superCycleEvent) {
@@ -153,33 +157,40 @@ class TimeStamper implements DataEventObserver
         }
     }
 
-    private static long getFifteenHertzMillis() {
+    private static long getFifteenHertzMillis()
+	{
         return fifteenHertzMillis;
     }
 
-    public static long getBaseTime02(long feMillis) {
+    public static long getBaseTime02(long feMillis)
+	{
         synchronized (timeStampEvent) {
             //long returnTime = currentTSMillis;
             long returnTime = currentTS;
             long currentTimeMillis = System.currentTimeMillis();
             long millis = currentTimeMillis - returnTime;
             while (millis > 5000) {
+				//System.out.println("HERE 1");
                 ++numBaseTime02Fix;
                 returnTime += 5000;
                 millis -= 5000;
             }
             errorMillis = currentTimeMillis - (returnTime + feMillis);
             if (errorMillis > 4000) {
+				//System.out.println("HERE 2");
                 returnTime += 5000;
                 errorMillis -= 5000;
             }
             else if (errorMillis < -1000) {
+				//System.out.println("HERE 3");
                 returnTime -= 5000;
                 errorMillis += 5000;
             }
             if (errorMillis > posErrorMillis) {
+				//System.out.println("HERE 4");
                 posErrorMillis = errorMillis;
             } else if (errorMillis < negErrorMillis) {
+				//System.out.println("HERE 5");
                 negErrorMillis = errorMillis;
             }
             return (returnTime * 1000000);
@@ -191,7 +202,10 @@ class TimeStamper implements DataEventObserver
         return lastUCDDelta;
     }
     
-    public static long getCurrentTS()  { return currentTS; }
+    public static long getCurrentTS()
+	{
+		return currentTS;
+	}
     public static long getPreviousTS()  { return previousTS; }
 
     public synchronized void update(DataEvent userEvent, DataEvent currentEvent) {
@@ -252,4 +266,15 @@ class TimeStamper implements DataEventObserver
     {
     	return fifteenHertzEvent;
     }
+
+	public static void main(String[] args) throws Exception
+	{
+		while (true) {
+			final long now = System.currentTimeMillis();
+			final long t20 = getBaseTime02(5000);
+
+    		System.out.println((new Date(t20 / 1000000)) + " ");
+			Thread.sleep(1000);
+		}
+	}
 }

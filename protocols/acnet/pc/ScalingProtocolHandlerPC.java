@@ -1,4 +1,4 @@
-// $Id: ScalingProtocolHandlerPC.java,v 1.12 2023/12/13 17:04:49 kingc Exp $
+// $Id: ScalingProtocolHandlerPC.java,v 1.13 2024/03/05 17:43:26 kingc Exp $
 
 package gov.fnal.controls.servers.dpm.protocols.acnet.pc;
 
@@ -109,7 +109,7 @@ public class ScalingProtocolHandlerPC extends DPMProtocolHandlerAcnet implements
 	public void handle(Scaling.Request.Scale m)
 	{
 		try {
-			final WhatDaq whatDaq = new WhatDaq(m.drf_request);
+			final WhatDaq whatDaq = new WhatDaq(null, m.drf_request);
 			final DataReplier replier = DataReplier.get(whatDaq, this);
 
 			if (m.raw != null)

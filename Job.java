@@ -1,4 +1,4 @@
-// $Id: Job.java,v 1.102 2023/12/13 17:04:49 kingc Exp $
+// $Id: Job.java,v 1.109 2024/03/05 17:48:10 kingc Exp $
 package gov.fnal.controls.servers.dpm;
 
 import java.util.Set;
@@ -25,9 +25,9 @@ import java.sql.SQLException;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetConnection;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
-import gov.fnal.controls.servers.dpm.pools.Node;
 import gov.fnal.controls.servers.dpm.pools.PoolUser;
 import gov.fnal.controls.servers.dpm.pools.ReceiveData;
 import gov.fnal.controls.servers.dpm.pools.LoggedDevice;
@@ -43,8 +43,6 @@ import gov.fnal.controls.servers.dpm.pools.acnet.LoggerConfigCache;
 import gov.fnal.controls.servers.dpm.events.DataEvent;
 import gov.fnal.controls.servers.dpm.events.OnceImmediateEvent;
 import gov.fnal.controls.servers.dpm.events.SavedDataEvent;
-//import gov.fnal.controls.servers.dpm.events.DataEventFactory;
-//import gov.fnal.controls.servers.dpm.events.DeltaTimeEvent;
 import gov.fnal.controls.servers.dpm.events.MonitorChangeEvent;
 
 import static gov.fnal.controls.db.DbServer.getDbServer;
@@ -79,7 +77,7 @@ abstract class Job implements AcnetErrors, TimeNow
 
 	WhatDaq WhatDaq(long refId, DPMRequest req) throws AcnetStatusException
 	{
-		final WhatDaq whatDaq = new WhatDaq(refId, req);
+		final WhatDaq whatDaq = new WhatDaq(list, refId, req);
 
 		whatDaqs.add(whatDaq);
 
@@ -88,7 +86,7 @@ abstract class Job implements AcnetErrors, TimeNow
 
 	WhatDaq WhatDaq(long refId, DPMRequest req, DataEvent event) throws AcnetStatusException
 	{
-		final WhatDaq whatDaq = new WhatDaq(refId, req, event);
+		final WhatDaq whatDaq = new WhatDaq(list, refId, req, event);
 
 		whatDaqs.add(whatDaq);
 
@@ -195,17 +193,6 @@ class ReceiveDataCallback implements ReceiveData, AcnetErrors, TimeNow
 	}
 
 	@Override
-    //public void receiveData(WhatDaq __, int status, int offset, byte[] data, 
-	//							long timestamp, CollectionContext ___)
-    public void receiveData(int status, int offset, byte[] data, long timestamp)
-	{
-		if (status == 0)
-			receiveData(data, offset, timestamp, 0);
-		else
-			receiveStatus(status, timestamp, 0);
-	}
-
-	@Override
 	public void receiveData(ByteBuffer data, long timestamp, long cycle)
 	{
 		try {
@@ -237,7 +224,6 @@ class ReceiveDataCallback implements ReceiveData, AcnetErrors, TimeNow
 				list.incrementReplies();
 			} catch (AcnetStatusException e) {
 				logger.log(e.status == ACNET_NO_SUCH ? Level.FINEST : Level.FINE, "exception sending reply", e);
-				//logger.log(Level.FINE, "exception sending reply", e);
 				list.sendStatusNoEx(whatDaq, e.status, timestamp, cycle);
 			} catch (IOException e) {
 				logger.log(Level.FINE, "exception sending reply", e);
@@ -437,17 +423,10 @@ class RedirectAcceleratorJob extends AcceleratorJob
 				list.sendDeviceInfo(whatDaq);
 
 				whatDaq.setReceiveData(new ReceiveDataCallback(list, whatDaq));
-				//pool.addRequest(whatDaq);
 
-				//if (srcNode == -1 || whatDaq.node().value() == srcNode) {
 				if (srcNode == null || whatDaq.node().equals(srcNode)) {
-					//if (dstNode == -1)
-						//list.sendStatusNoEx(refId, ACNET_NO_NODE, now());
-					//else {
-						whatDaq.redirect(dstNode);
-						//whatDaq.redirect((byte) (dstNode >> 8), (byte) dstNode);
-						pool.addRequest(whatDaq);
-					//}
+					whatDaq.redirect(dstNode);
+					pool.addRequest(whatDaq);
 				} else
 					pool.addRequest(whatDaq);
 
@@ -591,7 +570,6 @@ class LoggerSingleJob extends Job implements PoolUser
 	LoggerSingleJob(DPMList list, String loggerName, long timestamp, int accuracy)
 	{
 		super(list);
-		//this.loggerNode = AcnetNodeInfo.get(loggerNode);
 		this.loggerName = loggerName;
 		this.timestamp = timestamp;
 		this.t1 = timestamp - accuracy;
@@ -659,25 +637,20 @@ class LoggerSingleJob extends Job implements PoolUser
 	@Override
 	synchronized void start(Map<Long, DPMRequest> requests) throws InterruptedException, IOException, AcnetStatusException
 	{
-		//if (loggerNode == null) {
-			//for (Map.Entry<Long, DPMRequest> entry : requests.entrySet())
-			//	list.sendStatus(entry.getKey(), ACNET_NO_NODE, now());
-		//} else {
-			for (Map.Entry<Long, DPMRequest> entry : requests.entrySet()) {
-				final long refId = entry.getKey();
-				final DPMRequest req = entry.getValue();
+		for (Map.Entry<Long, DPMRequest> entry : requests.entrySet()) {
+			final long refId = entry.getKey();
+			final DPMRequest req = entry.getValue();
 
-				try {
-					final WhatDaq whatDaq = WhatDaq(refId, req);
-					final LoggerRequest loggerRequest = new LoggerRequest(whatDaq.loggedName, new Callback(list, whatDaq));
+			try {
+				final WhatDaq whatDaq = WhatDaq(refId, req);
+				final LoggerRequest loggerRequest = new LoggerRequest(whatDaq.loggedName, new Callback(list, whatDaq));
 
-					list.sendDeviceInfo(whatDaq);
-					fetchJobs.add((new DataLoggerFetchJob(this, loggerName, loggerRequest, new LoggerEvent(t1, t2, null))).start());
-				} catch (AcnetStatusException e) {
-					list.sendStatus(refId, e.status, now());
-				}
+				list.sendDeviceInfo(whatDaq);
+				fetchJobs.add((new DataLoggerFetchJob(this, loggerName, loggerRequest, new LoggerEvent(t1, t2, null))).start());
+			} catch (AcnetStatusException e) {
+				list.sendStatus(refId, e.status, now());
 			}
-		//}
+		}
 	}
 
 	@Override
@@ -692,7 +665,6 @@ class LoggerJob extends Job implements Runnable
 {
 	private final String loggerName;
 	private final long t1, t2;
-	//private long timestamp;
 	private final LinkedBlockingQueue<FetchInfo> fetchQ = new LinkedBlockingQueue<>();
 	private final Thread fetchThread;
 	private boolean completed = false;
@@ -710,7 +682,7 @@ class LoggerJob extends Job implements Runnable
 		this.fetchThread = new Thread(this, "LoggerFetch - " + list.id());
 		this.fetchThread.start();
 
-		logger.fine("Logger job: " + this.t1 + " to " + this.t2 + " loggerName: " + loggerName);
+		logger.log(Level.FINE, () -> String.format("Logger job: %tc to %tc loggerName:'%s'", this.t1, this.t2, loggerName));
 	}
 
 	private class FetchInfo
@@ -741,12 +713,6 @@ class LoggerJob extends Job implements Runnable
 			super(list, whatDaq);
 		}
 
-		//@Override
-		//public void dataLoggerFetchTrouble(Object request, int error)
-		//{
-		//	this.error = error;
-		//}
-	
 		@Override
 		public void plotData(long timestamp, int error, int __, long[] micros, int[] nanos, double[] values)
 		{
@@ -833,7 +799,7 @@ class LoggerJob extends Job implements Runnable
 			logger.log(Level.FINE, list.id() + " logger job exception", e);
 		}
 
-		logger.fine(list.id() + " logger job fetch thread exit");
+		logger.log(Level.FINE, list.id() + " logger job fetch thread exit");
 
 		completed = true;
 		list.jobCompleted(this);
@@ -853,17 +819,14 @@ class LoggerJob extends Job implements Runnable
 				whatDaq.setOption(WhatDaq.Option.FLOW_CONTROL);
 
 				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(list.id() + " best loggers:");
+					logger.log(Level.FINE, list.id() + " best loggers:");
 					for (LoggedDevice e : bestLoggers) {
-						logger.fine(list.id() + "    " + e.loggerName());
+						logger.log(Level.FINE, list.id() + "    " + e.loggerName());
 					}
 				}
 
 				list.sendDeviceInfo(whatDaq);
 
-				//if (bestLoggers.isEmpty())
-				//	list.sendStatus(whatDaq, ACNET_NO_NODE, now(), 0);
-				//else
 				fetchQ.offer(new FetchInfo(whatDaq, bestLoggers));
 			} catch (AcnetStatusException e) {
 				list.sendStatus(refId, e.status, now());
@@ -907,11 +870,9 @@ class SettingJob extends Job
 		}
 
 		@Override
-		//public void receiveData(WhatDaq __, int status, int offset, byte[] data, 
-		//							long timestamp, CollectionContext ___)
-		public void receiveData(int status, int offset, byte[] data, long timestamp)
+		public void receiveData(ByteBuffer buf, long timestamp, long cycle)
 		{
-			setReceivedStatus(status);
+			Thread.dumpStack();
 		}
 
 		@Override
@@ -928,13 +889,11 @@ class SettingJob extends Job
 		}
 	}
 
-	//private static volatile AcnetConnection connection = null; 
 	private static final Set<String> emptyDeviceSet = new HashSet<>();
 	private static final AllDevicesSet allDevicesSet = new AllDevicesSet();
 
 	private final ConsoleUser user;
 	private final List<SettingData> settings;
-	//private final ByteBuffer buf = ByteBuffer.allocate(64 * 1024);
 	private final ArrayList<SettingStatus> settingStatus = new ArrayList<>();
 
 	private final AcceleratorPool pool = new AcceleratorPool();
@@ -948,7 +907,6 @@ class SettingJob extends Job
 
 		this.settings = settings;
 		this.user = user;
-		//this.buf.order(ByteOrder.LITTLE_ENDIAN);
 
 		Scope.listUser(this.list);
 	}
@@ -994,7 +952,7 @@ class SettingJob extends Job
 
 		pool.processRequests();
 
-		logger.fine(String.format("%s ApplySettings - %d setting(s)", list.id(), settingStatus.size()));
+		logger.log(Level.FINE, String.format("%s ApplySettings - %d setting(s)", list.id(), settingStatus.size()));
 
 		completionCheck();
 	}
@@ -1008,7 +966,7 @@ class SettingJob extends Job
 	private void completionCheck()
 	{
 		if (!completed) {
-			logger.fine(String.format("%s CompletionCheck - %d setting(s)", list.id(), settingStatus.size()));
+			logger.log(Level.FINE, String.format("%s CompletionCheck - %d setting(s)", list.id(), settingStatus.size()));
 		
 			for (SettingStatus ss : settingStatus) {
 				if (!ss.completed())
@@ -1046,83 +1004,13 @@ class SettingJob extends Job
 			}
 		}
 
-		logger.fine(String.format("%s LogSettings - %d setting(s)", list.id(), successful.size()));
+		logger.log(Level.FINE, String.format("%s LogSettings - %d setting(s)", list.id(), successful.size()));
 
 		try {
 			pool.logSettings(user, list.clientHostName(), successful); 
 		} catch (Exception e) {
-			logger.warning(list.id() + " unable to log settings - " + e);
+			logger.log(Level.FINE, list.id() + " unable to log settings - " + e);
 		}
-
-		//if (connection == null)
-		//	connection = AcnetInterface.open("SETSDB");
-
-/*
-		buf.clear();
-
-		// Type code 1000 for Java UserSettingSource
-
-		buf.putShort((short) 1000);
-
-		// This is thrown away when received
-
-		buf.putInt(0);
-
-		// Server time of setting
-
-		buf.putLong(System.currentTimeMillis());
-
-		// Console user id
-
-		buf.putInt(user.id());
-
-		// Number of setting entries
-
-		buf.putInt(successful.size());
-
-		// App id that doesn't apply here but maybe could XXX
-
-		buf.putInt(0);
-
-		// "DAE" name
-
-		try {
-			final String srvNode = connection.getLocalNodeName();
-
-			buf.put((byte) srvNode.length());
-			buf.put(srvNode.getBytes());
-		} catch (Exception e) {
-			buf.put((byte) 0);
-		}
-
-		// "User" node
-
-		final String clientNode = list.clientHostName();
-		buf.put((byte) clientNode.length());
-		buf.put(clientNode.getBytes());
-
-		// Account name
-
-		buf.put((byte) user.name().length());
-		buf.put(user.name().getBytes());
-
-		// Setting entries
-
-		for (WhatDaq whatDaq : successful) {
-			buf.putInt(whatDaq.dipi());
-			buf.putShort((short) whatDaq.length());
-			buf.putInt(whatDaq.offset());
-			buf.put(whatDaq.setting(), 0, whatDaq.length() > 4 ? 4 : whatDaq.length()); 
-		}
-
-		buf.flip();
-
-		try {
-			connection.send("SETSDB", "SETSDB", buf);
-		} catch (Exception e) {
-			logger.warning(list.id() + " unable to log settings - " + e);
-		}
-	*/
 	}
 }
 
@@ -1159,7 +1047,7 @@ class SpeedTestJob extends Job
 				final double[] values = new double[arraySize];
 				final long[] micros = new long[arraySize];
 
-				logger.fine("arraySize: " + arraySize);
+				logger.log(Level.FINE, "arraySize: " + arraySize);
 
 				for (int ii = 0; ii < arraySize; ii++) {
 					values[ii] = random.nextDouble();
@@ -1184,7 +1072,7 @@ class SpeedTestJob extends Job
 						logger.log(Level.FINE, "exception delivering reply in speed test", e);
 					}
 
-					logger.fine("thread exit");
+					logger.log(Level.FINE, "thread exit");
 				};
 
 				(new Thread(task)).start();

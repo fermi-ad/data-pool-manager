@@ -1,9 +1,7 @@
-// $Id: ReplyId.java,v 1.2 2023/12/13 17:04:49 kingc Exp $
+// $Id: ReplyId.java,v 1.3 2024/02/22 16:29:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.util.Objects;
-
-import gov.fnal.controls.servers.dpm.pools.Node;
 
 public final class ReplyId
 {

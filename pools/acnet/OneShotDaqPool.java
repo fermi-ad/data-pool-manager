@@ -1,4 +1,4 @@
-// $Id: OneShotDaqPool.java,v 1.8 2023/11/01 20:56:57 kingc Exp $
+// $Id: OneShotDaqPool.java,v 1.11 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Iterator;
@@ -8,17 +8,17 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
+
 import gov.fnal.controls.servers.dpm.events.DataEvent;
 import gov.fnal.controls.servers.dpm.events.OnceImmediateEvent;
 
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 import gov.fnal.controls.servers.dpm.pools.PoolUser;
-import gov.fnal.controls.servers.dpm.pools.ReceiveData;
-import gov.fnal.controls.servers.dpm.pools.Node;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
-public class OneShotDaqPool extends DaqPool implements ReceiveData, Completable, AcnetErrors
+class OneShotDaqPool extends DaqPool implements Completable, AcnetErrors
 {
     private static final DataEvent event = new OnceImmediateEvent();
 
@@ -107,7 +107,6 @@ public class OneShotDaqPool extends DaqPool implements ReceiveData, Completable,
 
 		while ((whatDaq = queuedReqs.peekFirst()) != null) {
 			if (xtrans.add(whatDaq)) {
-				System.out.println("XTRANS add " + whatDaq);
 				queuedReqs.removeFirst();
 				activeReqs.add(whatDaq);
 			} else

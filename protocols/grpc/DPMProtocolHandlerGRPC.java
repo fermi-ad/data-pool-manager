@@ -1,4 +1,4 @@
-// $Id: DPMProtocolHandlerGRPC.java,v 1.8 2023/11/02 16:36:15 kingc Exp $
+// $Id: DPMProtocolHandlerGRPC.java,v 1.10 2024/03/05 17:45:23 kingc Exp $
 package gov.fnal.controls.servers.dpm.protocols.grpc;
 
 //import java.util.UUID;
@@ -72,6 +72,8 @@ class DPMImpl extends DPMImplBase// implements ServerInterceptor
 	{
 		if (list.getReqList().size() > 0) {
 			try {
+				System.out.println("gRPC - startAcquisition() with " + list.getReqList().size() + " device(s)");
+
 				//final DPMSession session = DPMSession.get(list.getSessionId());
 				final DPMListGRPC dpmList = new DPMListGRPC.MultipleReplies(handler, responseObserver);
 				int ii = 0;
@@ -80,8 +82,8 @@ class DPMImpl extends DPMImplBase// implements ServerInterceptor
 					dpmList.addRequest(request, ii++);
 
 				dpmList.start(null);
-			//} catch (AcnetStatusException e) {
-			} catch (Exception e) {
+			} catch (AcnetStatusException e) {
+			//} catch (Exception e) {
 			}
 		} else {
 			responseObserver.onCompleted();
@@ -102,7 +104,7 @@ class DPMImpl extends DPMImplBase// implements ServerInterceptor
 					final DeviceInfo.Builder dInfo = DeviceInfo.newBuilder();
 
 					try {
-						final WhatDaq whatDaq = new WhatDaq(0, (new DPMRequest(request)));
+						final WhatDaq whatDaq = new WhatDaq(null, 0, (new DPMRequest(request)));
 						//final Lookup.DeviceInfo di = Lookup.getDeviceInfo(request.dReq.getName());
 
 						dInfo.setDi(whatDaq.getDeviceIndex());

@@ -1,4 +1,4 @@
-// $Id: AcnetPoolImpl.java,v 1.10 2023/11/01 20:56:57 kingc Exp $
+// $Id: AcnetPoolImpl.java,v 1.12 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Set;
@@ -11,11 +11,11 @@ import java.util.Timer;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
 import gov.fnal.controls.servers.dpm.SettingData;
 import gov.fnal.controls.servers.dpm.pools.PoolUser;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
-import gov.fnal.controls.servers.dpm.pools.Node;
 import gov.fnal.controls.servers.dpm.pools.PoolType;
 import gov.fnal.controls.servers.dpm.pools.PoolInterface;
 
@@ -39,10 +39,10 @@ public class AcnetPoolImpl implements PoolInterface, SettingData.Handler, AcnetE
 
 	public static void init() throws Exception
 	{
-		Lookup.init();
+		//Lookup.init();
 		LoggerConfigCache.init();
 		States.init();
-		DBNews.init();
+		//DBNews.init();
 	}
 
 	@Override

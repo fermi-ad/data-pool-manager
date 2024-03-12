@@ -1,4 +1,4 @@
-// $Id: DaqSendTransaction.java,v 1.11 2023/12/13 17:04:49 kingc Exp $
+// $Id: DaqSendTransaction.java,v 1.14 2024/03/11 19:14:08 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.ArrayList;
@@ -14,9 +14,9 @@ import gov.fnal.controls.servers.dpm.acnetlib.AcnetConnection;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetReplyHandler;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetRequestContext;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.NodeFlags;
 
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
-import gov.fnal.controls.servers.dpm.pools.NodeFlags;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
@@ -117,7 +117,15 @@ abstract class DaqSendTransaction implements NodeFlags, AcnetReplyHandler, Acnet
 		if (r.status() == ACNET_NO_TASK) {
 			completeWithStatus(ACNET_NODE_DOWN);
 			return;
-		}	
+		}
+
+		if (r.status() == ACNET_PEND)
+			return;
+
+		if (r.status() != 0) {
+			completeWithStatus(r.status());
+			return;
+		}
 
 		retryCount = 0;
 
@@ -165,7 +173,7 @@ abstract class DaqSendTransaction implements NodeFlags, AcnetReplyHandler, Acnet
 
 class DaqSendTransaction16 extends DaqSendTransaction
 {
-	static final AcnetConnection connection = AcnetConnection.open("GETS16");
+	static final AcnetConnection connection = AcnetInterface.open("GETS16");
 
 	DaqSendTransaction16(DaqRequestList reqList)
 	{
@@ -233,12 +241,12 @@ class DaqSendTransaction16 extends DaqSendTransaction
 			if (reqList.isSetting)
 				whatDaq.getReceiveData().receiveStatus(status, now, 0);
 			else {
-				if (status != 0)
-					whatDaq.getReceiveData().receiveStatus(status, now, 0);
-
 				final int pos = data.position();
 
-				whatDaq.getReceiveData().receiveData(data, now, 0);
+				if (status == 0)
+					whatDaq.getReceiveData().receiveData(data, now, 0);
+				else
+					whatDaq.getReceiveData().receiveStatus(status, now, 0);
 
 				data.position(pos + whatDaq.getLength());
 
@@ -258,9 +266,9 @@ class DaqSendTransaction16 extends DaqSendTransaction
 
 class DaqSendTransaction32 extends DaqSendTransaction //implements NodeFlags, AcnetReplyHandler, AcnetErrors//, Daq32Defs
 {
-	static final AcnetConnection connectionR = AcnetInterface.open("GETSR").queueReplies(true);
-	static final AcnetConnection connection1 = AcnetInterface.open("GETS1").queueReplies(true);
-	static final AcnetConnection connectionS = AcnetInterface.open("GETSS").queueReplies(true);
+	static final AcnetConnection connectionR = AcnetInterface.open("GETSR").setQueueReplies();
+	static final AcnetConnection connection1 = AcnetInterface.open("GETS1").setQueueReplies();
+	static final AcnetConnection connectionS = AcnetInterface.open("GETSS").setQueueReplies();
 
 	//int returnCount = 0;
 
@@ -371,14 +379,14 @@ class DaqSendTransaction32 extends DaqSendTransaction //implements NodeFlags, Ac
 				if (reqList.isSetting) {
 					whatDaq.getReceiveData().receiveStatus(status == 0 ? globalStatus : status, collectTS, cycleTS);
 				} else {
+					final int pos = data.position();
+
 					if (status != 0)
 						whatDaq.getReceiveData().receiveStatus(status, collectTS, cycleTS);
 					else if (globalStatus != 0)
 						whatDaq.getReceiveData().receiveStatus(globalStatus, collectTS, cycleTS);
-
-					final int pos = data.position();
-
-					whatDaq.getReceiveData().receiveData(data, collectTS, cycleTS);
+					else
+						whatDaq.getReceiveData().receiveData(data, collectTS, cycleTS);
 
 					data.position(pos + whatDaq.getLength());
 

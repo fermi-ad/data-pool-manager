@@ -1,58 +1,16 @@
 // $I$
 package gov.fnal.controls.servers.dpm.scaling;
 
-//import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import static gov.fnal.controls.db.DbServer.getDbServer;
 
-//import gov.fnal.controls.db.DbServer;
-//import gov.fnal.controls.db.CachedResultSet;
+// Multifunction diapason
 
-
-//import static gov.fnal.controls.servers.dpm.scaling.Postgres.DO_SYBASE;
-//import static gov.fnal.controls.servers.dpm.scaling.Postgres.DO_POSTGRES;
-
-
-/**
- * This file contains shared definitions for the CLIB device scaling modules.
- * Based on scaling_internal.h written by B S Hendricks.
- * 
- * Copyright: Copyright (c) 2001 Company: URA/FermiLab
- * 
- * @author Andrey Petrov
- * @author Yuri Ivanov
- * 
- * @version 0.10<br>
- *          2 bugs fixed in read_interpolation_tables() 11-Jul-2016
- * @version 0.09<br>
- *          Multifunction common transform tables are read
- *	    from the data base table 08-Jun-2016
- * @version 0.09<br>
- *          Interpolation tables are read from the data base table 16-Dec-2013
- * @version 0.08<br>
- *          table_10 corrected 09 Sep 2013: escaping "out of range" errors
- * @version 0.07<br>
- *          table_11 included 28 Aug 2013
- * @version 0.06<br>
- *          table_10 included 21 Aug 2013
- * @version 0.05<br>
- *          table_2 primary/common 2 new elements added 23 Jun 2009
- * @version 0.04<br>
- *          table 9 included 02 Jun 2005
- * @version 0.03<br>
- *          table 8 included 24 May 2005
- * @version 0.02<br>
- *          tables 3-7 included 17 Oct 2003
- * @version 0.01<br>
- *          Class created: 18 May 2001
- * 
- */
-
-class TransformTableData {	// Multifunction diapason
-
+class TransformTableData
+{
     int		table_number;		// table number 1,2,...
     int		order_number;		// diapason order number 0,1,.... 
     int		common_transform;	// common transform for the diapason
@@ -62,20 +20,18 @@ class TransformTableData {	// Multifunction diapason
     double	common_final;		// common units diapason upper limit
     double []	cx;			// coefficients for the transform
 
-    TransformTableData () {	// the constructor
-	this.table_number    = 0;	// table number 1,2,...
-	this.order_number    = 0;	// diapason order number 0,1,.... 
-	this.common_transform= 0;	// common transform for the diapason
-	this.primary_initial = 0;	// primary units diapason lower limit
-	this.primary_final   = 0;	// primary units diapason upper limit
-	this.common_initial  = 0;	// common units diapason lower limit
-	this.common_final    = 0;	// common units diapason upper limit
-	this.cx = new double[10];	// coefficients for the transform
-
+    TransformTableData ()
+	{
+		this.table_number    = 0;	// table number 1,2,...
+		this.order_number    = 0;	// diapason order number 0,1,.... 
+		this.common_transform= 0;	// common transform for the diapason
+		this.primary_initial = 0;	// primary units diapason lower limit
+		this.primary_final   = 0;	// primary units diapason upper limit
+		this.common_initial  = 0;	// common units diapason lower limit
+		this.common_final    = 0;	// common units diapason upper limit
+		this.cx = new double[10];	// coefficients for the transform
 	}
-
-
-} // -------- End of the class TransformTableData -------
+}
 
 abstract class ScalingInternal
 {
@@ -106,10 +62,8 @@ abstract class ScalingInternal
 
     static String dbt_multi = "accdb..scaling_multifunction_transforms";	
     static String dbt_multi_P = "accdb.scaling_multifunction_transforms";	
-    /* ------- summary tables for both primary and common values --------- */
 
     static double[] table_primary_values = null;
-
     static double[] table_common_values = null;
 
     static TransformTableData[] all_transform_values = null;
@@ -127,96 +81,65 @@ abstract class ScalingInternal
 	{
 		int n_table_lines;
 		int il, jl, kl, nl;
-		int vpointer;	/* work variable for loops */
+		int vpointer;	// work variable for loops
 
 		if (n_interpolation_tables != 0)
 			return;
 
-			/* calculate the number of interpolation tables and the table sizes */
+		// calculate the number of interpolation tables and the table sizes
+
 		for (il = 0; il < N_TABLES_MAX; il++) table_size[il] = 0;
-		n_table_lines = 0;		/* initial value */
-		/* n_interpolation_tables = 0;	   initial value */
+		n_table_lines = 0;		// initial value
 		try {
-			ResultSet table_elements = null;
-			//if ( DO_SYBASE ) {
-			//	table_elements =
-			//			ADBS.executeQuery("SELECT table_number FROM "+dbt_interp);
-			//}
-			//if ( DO_POSTGRES ) {
-				table_elements =
-						getDbServer("adbs").executeQuery("SELECT table_number FROM "+dbt_interp_P);
-			//}
-			while (table_elements.next() ) {	
-			il= table_elements.getInt("table_number");
-			table_size[il-1]++;
-			if (table_size[il-1] == 1)
-				n_interpolation_tables++;
-			n_table_lines++;
+			final ResultSet table_elements = getDbServer("adbs").executeQuery("SELECT table_number FROM "+dbt_interp_P);
+
+			while (table_elements.next()) {	
+				il= table_elements.getInt("table_number");
+				table_size[il-1]++;
+				if (table_size[il-1] == 1)
+					n_interpolation_tables++;
+				n_table_lines++;
 			}
-			}  catch (SQLException ex) {
-				System.out.println("SQL exception:");
-				ex.printStackTrace();
-			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
 		table_primary_values = new double[n_table_lines];
 		table_common_values  = new double[n_table_lines];
 
 
-			/* read the primary values */
+		// read the primary values
+
 		vpointer = 0;
 		for (il = 0; il < n_interpolation_tables; il++ ) {	
-			jl = il+1;		/* table index */
+			jl = il+1;		// table index
 			try {
-				ResultSet table_primary = null;
-			//if ( DO_SYBASE ) {
-			//		table_primary =
-			//				ADBS.executeQuery("SELECT primary_value FROM "+ dbt_interp
-			//					+ " WHERE table_number=" + jl + " order by order_number");
-			//}
-			//if ( DO_POSTGRES ) {
-					table_primary =
-							getDbServer("adbs").executeQuery("SELECT primary_value FROM "+ dbt_interp_P
-								+ " WHERE table_number=" + jl + " order by order_number");
-			//}
-			while (table_primary.next() ) {	
-				table_primary_values[vpointer] = table_primary.getDouble("primary_value");
-				vpointer++;
+				final ResultSet table_primary = getDbServer("adbs").executeQuery("SELECT primary_value FROM "+ dbt_interp_P
+													+ " WHERE table_number=" + jl + " order by order_number");
+				while (table_primary.next() ) {	
+					table_primary_values[vpointer] = table_primary.getDouble("primary_value");
+					vpointer++;
 				}
-			} catch (SQLException ex) {
-						System.out.println("SQL exception:");
-						ex.printStackTrace();
-					}
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
+		}
 
-
-			/* read the common values */
+		// read the common values
 		vpointer = 0;
 		for (il = 0; il < n_interpolation_tables; il++ ) {	
-			jl = il+1;		/* table index */
+			jl = il+1;		// table index
 			try {
-				ResultSet table_common = null;
-			//if ( DO_SYBASE ) {
-			//		table_common =
-			//			ADBS.executeQuery("SELECT common_value FROM " + dbt_interp
-			//					+ " WHERE table_number=" + jl + " order by order_number");
-			//}
-			//if ( DO_POSTGRES ) {
-					table_common =
-						getDbServer("adbs").executeQuery("SELECT common_value FROM " + dbt_interp_P
-								+ " WHERE table_number=" + jl + " order by order_number");
-			//}
-			while (table_common.next() ) {	
-				table_common_values[vpointer] = table_common.getDouble("common_value");
-				vpointer++;
+				final ResultSet table_common = getDbServer("adbs").executeQuery("SELECT common_value FROM " + dbt_interp_P
+													+ " WHERE table_number=" + jl + " order by order_number");
+				while (table_common.next()) {	
+					table_common_values[vpointer] = table_common.getDouble("common_value");
+					vpointer++;
 				}
 			} catch (SQLException ex) {
-						System.out.println("SQL exception:");
-						ex.printStackTrace();
-					}
+				ex.printStackTrace();
 			}
-		
-		
-		return;
+		}
 	}
 
 
@@ -227,7 +150,7 @@ abstract class ScalingInternal
     *   The offset is returned
     *
     ***************************************************************************/
-    static int interpolation_table_offset(int table_number )
+    static int interpolation_table_offset(int table_number)
 	{
 		int il;
 		int vpointer = 0;
@@ -235,7 +158,8 @@ abstract class ScalingInternal
 		if (n_interpolation_tables != 0)
 			read_interpolation_tables();	// if the tables are not read in yet 
 
-			/* calculate the number of interpolation tables and the table sizes */
+		// calculate the number of interpolation tables and the table sizes
+
 		for (il = 0; il < (table_number-1); il++)
 			vpointer += table_size[il];
 
@@ -260,105 +184,83 @@ abstract class ScalingInternal
 		 if (n_mfc_transform_tables != 0)
 			 return;
 		 
-		/* calculate the number of multifunction tables and the table sizes */
-				// initialize the table sizes
-		for (il = 0; il < N_MFCT_TABLES_MAX; il++) mfct_table_size[il] = 0;
+		// calculate the number of multifunction tables and the table sizes
+		// initialize the table sizes
 
-		n_table_lines = 0;		// initial value */
+		for (il = 0; il < N_MFCT_TABLES_MAX; il++)
+			mfct_table_size[il] = 0;
+
+		n_table_lines = 0;		// initial value
 		try {
-			ResultSet mfct_table_elements = null;
-			//if ( DO_SYBASE ) {
-			//	 mfct_table_elements =
-			//			ADBS.executeQuery("SELECT table_number FROM " + dbt_multi);
-			//}
-			//if ( DO_POSTGRES ) {
-				 mfct_table_elements =
-						getDbServer("adbs").executeQuery("SELECT table_number FROM " + dbt_multi_P);
-			//}
+			final ResultSet mfct_table_elements = getDbServer("adbs").executeQuery("SELECT table_number FROM " + dbt_multi_P);
+			
 			while (mfct_table_elements.next() ) {	
-			il= mfct_table_elements.getInt("table_number");
-			mfct_table_size[il-1]++;
-			if (mfct_table_size[il-1] == 1)
-				n_mfc_transform_tables++;
-			n_table_lines++;
+				il= mfct_table_elements.getInt("table_number");
+				mfct_table_size[il-1]++;
+				if (mfct_table_size[il-1] == 1)
+					n_mfc_transform_tables++;
+				n_table_lines++;
 			}
-			}  catch (SQLException ex) {
-				System.out.println("SQL multifunction transforms exception:");
-				ex.printStackTrace();
-			}
+		}  catch (SQLException ex) {
+			ex.printStackTrace();
+		}
 				 
 		all_transform_values = new TransformTableData[N_MFCT_TABLES_MAX*MAX_MFCT_TABLE_SIZE];
 		 
-			/* read the multifunction transform values */
+		// read the multifunction transform values
 		vpointer = 0;
 		for (il = 0; il < n_mfc_transform_tables; il++ ) {	
 			jl = il+1;		// table number
 			try {
-				ResultSet table_transform = null;
-			//if ( DO_SYBASE ) {
-			//		table_transform =
-			//				ADBS.executeQuery("SELECT table_number,order_number,common_transform, " +
-			//		"primary_initial,primary_final,common_initial,common_final," +
-			//		"const1,const2,const3,const4,const5," +
-			//		"const6,const7,const8,const9,const10 FROM "+dbt_multi+
-			//		" WHERE table_number=" + jl + " order by order_number");
-			//}
-			//if ( DO_POSTGRES ) {
-					table_transform =
-							getDbServer("adbs").executeQuery("SELECT table_number,order_number,common_transform, " +
-					"primary_initial,primary_final,common_initial,common_final," +
-					"const1,const2,const3,const4,const5," +
-					"const6,const7,const8,const9,const10 FROM "+dbt_multi_P+
-					" WHERE table_number=" + jl + " order by order_number");
-			//}
-			while (table_transform.next() ) {	
-				all_transform_values[vpointer] = new TransformTableData();
-				all_transform_values[vpointer].table_number =
-				   table_transform.getInt("table_number");
-				all_transform_values[vpointer].order_number =
-				   table_transform.getInt("order_number");
-				all_transform_values[vpointer].common_transform =
-				   table_transform.getInt("common_transform");
+				final ResultSet table_transform = getDbServer("adbs").executeQuery("SELECT table_number,order_number,common_transform, " +
+														"primary_initial,primary_final,common_initial,common_final," +
+														"const1,const2,const3,const4,const5," +
+														"const6,const7,const8,const9,const10 FROM "+dbt_multi_P+
+														" WHERE table_number=" + jl + " order by order_number");
+				while (table_transform.next() ) {	
+					all_transform_values[vpointer] = new TransformTableData();
+					all_transform_values[vpointer].table_number =
+					   table_transform.getInt("table_number");
+					all_transform_values[vpointer].order_number =
+					   table_transform.getInt("order_number");
+					all_transform_values[vpointer].common_transform =
+					   table_transform.getInt("common_transform");
 
-				all_transform_values[vpointer].primary_initial =
-				table_transform.getDouble("primary_initial");
-				all_transform_values[vpointer].primary_final =
-				table_transform.getDouble("primary_final");
-				all_transform_values[vpointer].common_initial =
-				table_transform.getDouble("common_initial");
-				all_transform_values[vpointer].common_final =
-				table_transform.getDouble("common_final");
+					all_transform_values[vpointer].primary_initial =
+					table_transform.getDouble("primary_initial");
+					all_transform_values[vpointer].primary_final =
+					table_transform.getDouble("primary_final");
+					all_transform_values[vpointer].common_initial =
+					table_transform.getDouble("common_initial");
+					all_transform_values[vpointer].common_final =
+					table_transform.getDouble("common_final");
 
-				all_transform_values[vpointer].cx[0] =
-				table_transform.getDouble("const1");
-				all_transform_values[vpointer].cx[1] =
-				table_transform.getDouble("const2");
-				all_transform_values[vpointer].cx[2] =
-				table_transform.getDouble("const3");
-				all_transform_values[vpointer].cx[3] =
-				table_transform.getDouble("const4");
-				all_transform_values[vpointer].cx[4] =
-				table_transform.getDouble("const5");
-				all_transform_values[vpointer].cx[5] =
-				table_transform.getDouble("const6");
-				all_transform_values[vpointer].cx[6] =
-				table_transform.getDouble("const7");
-				all_transform_values[vpointer].cx[7] =
-				table_transform.getDouble("const8");
-				all_transform_values[vpointer].cx[8] =
-				table_transform.getDouble("const9");
-				all_transform_values[vpointer].cx[9] =
-				table_transform.getDouble("const10");
-				vpointer++;
+					all_transform_values[vpointer].cx[0] =
+					table_transform.getDouble("const1");
+					all_transform_values[vpointer].cx[1] =
+					table_transform.getDouble("const2");
+					all_transform_values[vpointer].cx[2] =
+					table_transform.getDouble("const3");
+					all_transform_values[vpointer].cx[3] =
+					table_transform.getDouble("const4");
+					all_transform_values[vpointer].cx[4] =
+					table_transform.getDouble("const5");
+					all_transform_values[vpointer].cx[5] =
+					table_transform.getDouble("const6");
+					all_transform_values[vpointer].cx[6] =
+					table_transform.getDouble("const7");
+					all_transform_values[vpointer].cx[7] =
+					table_transform.getDouble("const8");
+					all_transform_values[vpointer].cx[8] =
+					table_transform.getDouble("const9");
+					all_transform_values[vpointer].cx[9] =
+					table_transform.getDouble("const10");
+					vpointer++;
 				}
 			} catch (SQLException ex) {
-						System.out.println("SQL multifunction transforms exception:");
-						ex.printStackTrace();
-					}
+				ex.printStackTrace();
 			}
-		 
-			 
-		 return;
+		}
   	 }
 
     /***************************************************************************
@@ -368,7 +270,7 @@ abstract class ScalingInternal
     *   The offset is returned
     *
     ******************************************************************************/
-    static int mfct_table_offset(int table_number )
+    static int mfct_table_offset(int table_number)
 	{
 		int il;
 		int vpointer = 0;
@@ -376,7 +278,7 @@ abstract class ScalingInternal
 		if (n_mfc_transform_tables != 0)
 			read_multifunction_transforms();	// if the tables are not read in yet 
 
-			/* calculate the number of interpolation tables and the table sizes */
+		// calculate the number of interpolation tables and the table sizes
 		for (il = 0; il < (table_number-1); il++)
 			vpointer += mfct_table_size[il];
 

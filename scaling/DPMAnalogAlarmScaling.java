@@ -1,9 +1,10 @@
-// $Id: DPMAnalogAlarmScaling.java,v 1.10 2023/11/02 16:36:16 kingc Exp $
+// $Id: DPMAnalogAlarmScaling.java,v 1.11 2024/01/05 21:31:06 kingc Exp $
 package gov.fnal.controls.servers.dpm.scaling;
 
-import gov.fnal.controls.service.proto.Lookup_v2;
+//import gov.fnal.controls.service.proto.Lookup_v2;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
+import gov.fnal.controls.servers.dpm.pools.DeviceInfo;
 
 public interface DPMAnalogAlarmScaling extends Scaling
 {
@@ -117,7 +118,8 @@ public interface DPMAnalogAlarmScaling extends Scaling
 
 	public static DPMAnalogAlarmScaling get(WhatDaq whatDaq)
 	{
-		final Lookup_v2.ReadSetScaling scaling;
+		//final Lookup_v2.ReadSetScaling scaling;
+		final DeviceInfo.ReadSetScaling scaling;
 
 		if (whatDaq.dInfo.analogAlarm != null && whatDaq.dInfo.reading != null)
 			scaling = whatDaq.dInfo.reading.scaling;
@@ -127,7 +129,8 @@ public interface DPMAnalogAlarmScaling extends Scaling
 		return scaling == null ? noScaling : (DPMAnalogAlarmScaling) get(whatDaq, scaling);
 	}
 
-	public static Scaling get(WhatDaq whatDaq, Lookup_v2.ReadSetScaling scaling)
+	//public static Scaling get(WhatDaq whatDaq, Lookup_v2.ReadSetScaling scaling)
+	public static Scaling get(WhatDaq whatDaq, DeviceInfo.ReadSetScaling scaling)
 	{
 		return new DPMAnalogAlarmScalingImpl(whatDaq, scaling);
 	}
@@ -139,7 +142,8 @@ class DPMAnalogAlarmScalingImpl extends AnalogAlarmScaling implements DPMAnalogA
     private final int ftd;
     private final int length;
 
-	DPMAnalogAlarmScalingImpl(WhatDaq whatDaq, Lookup_v2.ReadSetScaling scaling)// throws AcnetStatusException
+	//DPMAnalogAlarmScalingImpl(WhatDaq whatDaq, Lookup_v2.ReadSetScaling scaling)// throws AcnetStatusException
+	DPMAnalogAlarmScalingImpl(WhatDaq whatDaq, DeviceInfo.ReadSetScaling scaling)// throws AcnetStatusException
 	{
 		super(whatDaq.di(), whatDaq.pi(), scaling);
 

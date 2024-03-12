@@ -1,4 +1,4 @@
-// $Id: DeltaTimeEvent.java,v 1.3 2023/09/26 20:52:04 kingc Exp $
+// $Id: DeltaTimeEvent.java,v 1.5 2024/01/25 23:14:01 kingc Exp $
 package gov.fnal.controls.servers.dpm.events;
 
 import java.util.Iterator;
@@ -7,7 +7,7 @@ import java.util.LinkedList;
 public class DeltaTimeEvent implements DataEvent
 {
 	static final long endOfTime = Long.MAX_VALUE;
-	static final LinkedList<DeltaTimeThread> threads = new LinkedList<>();
+	//static final LinkedList<DeltaTimeThread> threads = new LinkedList<>();
 
 	final long t1;
 	final long t2;
@@ -17,7 +17,7 @@ public class DeltaTimeEvent implements DataEvent
 
 	boolean repetitive;
 
-	DeltaTimeThread thread;
+	//DeltaTimeThread thread;
 
 	public DeltaTimeEvent(long t1, long t2, long millis)
 	{
@@ -52,6 +52,11 @@ public class DeltaTimeEvent implements DataEvent
 		this.immediate = immediate;
 		this.repetitive = true;
 		this.string = "p," + millis + "," + immediate;
+	}
+
+	public boolean immediate()
+	{
+		return immediate;
 	}
 
 	@Override
@@ -103,34 +108,34 @@ public class DeltaTimeEvent implements DataEvent
 	@Override
 	public synchronized void addObserver(DataEventObserver observer)
 	{
-		thread = new DeltaTimeThread(observer, this);
+		//thread = new DeltaTimeThread(observer, this);
 
-		synchronized (threads) {
-			threads.add(thread);
-		}
-		thread.start();
+		//synchronized (threads) {
+			//threads.add(thread);
+		//}
+		//thread.start();
 	}
 
 	@Override
 	public synchronized void deleteObserver(DataEventObserver observer)
 	{
-		synchronized (threads) {
-			final Iterator<DeltaTimeThread> iter = threads.iterator();
-			DeltaTimeThread thread;
+		//synchronized (threads) {
+		//	final Iterator<DeltaTimeThread> iter = threads.iterator();
+		//	DeltaTimeThread thread;
 
-			while (iter.hasNext()) {
-				thread = iter.next();
-				if (thread.observer == observer && thread.event == this) {
-					synchronized (thread) {
-						thread.observer = null;
-					}
-					if (thread != Thread.currentThread()) {
-						//AcnetInterface.safeThreadInterrupt(thread);
-					}
-					iter.remove();
-				}
-			}
-		}
+		//	while (iter.hasNext()) {
+		//		thread = iter.next();
+		//		if (thread.observer == observer && thread.event == this) {
+		//			synchronized (thread) {
+		//				thread.observer = null;
+		//			}
+		//			if (thread != Thread.currentThread()) {
+		//				//AcnetInterface.safeThreadInterrupt(thread);
+		//			}
+		//			iter.remove();
+		//		}
+		//	}
+		//}
 	}
 
 	@Override
@@ -139,12 +144,12 @@ public class DeltaTimeEvent implements DataEvent
 		return string;
 	}
 
-	protected void removeThread(DeltaTimeThread thread)
-	{
-		synchronized (threads) {
-			threads.remove(thread);
-		}
-	}
+	//protected void removeThread(DeltaTimeThread thread)
+	//{
+		//synchronized (threads) {
+		//	threads.remove(thread);
+		//}
+	//}
 
 	public synchronized long getStartTime()
 	{

@@ -1,4 +1,4 @@
-// $Id: SavedDataSource.java,v 1.7 2023/12/13 17:04:49 kingc Exp $
+// $Id: SavedDataSource.java,v 1.10 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.sql.ResultSet;
@@ -27,430 +27,9 @@ import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 import gov.fnal.controls.db.DbServer;
 import static gov.fnal.controls.db.DbServer.getPostgreSQLServer;
 
-
-class ByteArrayConverter
-{
-/*
-	static byte[] toByteArray(double val)
-	{
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(8);
-			DataOutputStream dos = new DataOutputStream(baos);
-			dos.writeDouble(val);
-			baos.close();
-			dos.close();
-			return baos.toByteArray();
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-/*
-	static double doubleFromByteArray(byte[] data) {
-		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-			DataInputStream dis = new DataInputStream(bais);
-			double val = dis.readDouble();
-			dis.close();
-			bais.close();
-			return val;
-		} catch (IOException e) {
-			return Double.NaN;
-		}
-	}
-	*/
-
-	/**
-     * Double array conversion.
-     * 
-	 * @param arr
-     *      the array 
-	 * @return double converter
-	 */
-	 /*
-	static byte[] toByteArray(double[] arr) {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(
-					8 * arr.length);
-			DataOutputStream dos = new DataOutputStream(baos);
-			for (int i = 0; i < arr.length; dos.writeDouble(arr[i++]))
-				;
-			baos.close();
-			dos.close();
-			return baos.toByteArray();
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-/*
-	static double[] doubleArrayFromByteArray(byte[] data)
-	{
-		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-			DataInputStream dis = new DataInputStream(bais);
-			double[] val = new double[data.length / 8];
-			for (int i = 0; i < val.length; i++)
-				val[i] = dis.readDouble();
-			dis.close();
-			bais.close();
-			return val;
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Float array conversion.
-     * 
-	 * @param arr
-     *      float array
-	 * @return float converter
-	 */
-	 /*
-	static byte[] toByteArray(float[] arr) {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(
-					4 * arr.length);
-			DataOutputStream dos = new DataOutputStream(baos);
-			for (int i = 0; i < arr.length; i++)
-				dos.writeFloat(arr[i]);
-			baos.close();
-			dos.close();
-			return baos.toByteArray();
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Convert to float array from byte array.
-     * 
-	 * @param data
-     *      the byte array data
-	 * @return converted float array
-	 */
-	 /*
-	static float[] floatArrayFromByteArray(byte[] data) {
-		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-			DataInputStream dis = new DataInputStream(bais);
-			float[] val = new float[data.length / 4];
-			for (int i = 0; i < val.length; i++)
-				val[i] = dis.readFloat();
-			dis.close();
-			bais.close();
-			return val;
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Long array conversion.
-     * 
-	 * @param arr
-     *      the array of longs
-	 * @return long converter
-	 */
-	 /*
-	static byte[] toByteArray(long[] arr) {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(
-					8 * arr.length);
-			DataOutputStream dos = new DataOutputStream(baos);
-			for (int i = 0; i < arr.length; i++)
-				dos.writeLong(arr[i]);
-			baos.close();
-			dos.close();
-			return baos.toByteArray();
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Convert to long array from byte array.
-     * 
-	 * @param data
-     *      the array of bytes
-	 * @return converted long aray
-	 */
-
-	/**
-     * Short array conversion.
-     * 
-	 * @param arr
-     *      the array of shorts
-	 * @return short converter
-	 */
-	 /*
-	static byte[] toByteArray(short[] arr) {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(
-					2 * arr.length);
-			DataOutputStream dos = new DataOutputStream(baos);
-			for (int i = 0; i < arr.length; i++)
-				dos.writeShort(arr[i]);
-			baos.close();
-			dos.close();
-			return baos.toByteArray();
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Convert to short array from byte array.
-     * 
-	 * @param data
-     *      the byte array
-	 * @return converted short array
-	 */
-	 /*
-	static short[] shortArrayFromByteArray(byte[] data) {
-		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-			DataInputStream dis = new DataInputStream(bais);
-			short[] val = new short[data.length / 2];
-			for (int i = 0; i < val.length; i++)
-				val[i] = dis.readShort();
-			dis.close();
-			bais.close();
-			return val;
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Integer array conversion.
-     * 
-	 * @param arr
-     *      the integer array
-	 * @return integer converter
-	 */
-	 /*
-	static byte[] toByteArray(int[] arr) {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(
-					4 * arr.length);
-			DataOutputStream dos = new DataOutputStream(baos);
-			for (int i = 0; i < arr.length; i++)
-				dos.writeInt(arr[i]);
-			baos.close();
-			dos.close();
-			return baos.toByteArray();
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Convert to integer array from byte array.
-     * 
-	 * @param data
-     *      the byte array
-	 * @return converted integer array
-	 */
-	 /*
-	static int[] intArrayFromByteArray(byte[] data) {
-		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-			DataInputStream dis = new DataInputStream(bais);
-			int[] val = new int[data.length / 4];
-			for (int i = 0; i < val.length; i++)
-				val[i] = dis.readInt();
-			dis.close();
-			bais.close();
-			return val;
-		} catch (IOException e) {
-			return null;
-		}
-	}
-	*/
-
-	/**
-     * Main method.
-     * 
-	 * @param args
-     *      arguments to pass
-	 */
-	 /*
-	public static void main(String[] args) {
-		{
-			double[] dbl = new double[4005];
-			for (int i = 0; i < 4000; i++)
-				if (i < 2000)
-					dbl[i] = i;
-				else
-					dbl[i] = -i;
-			dbl[4000] = Double.MAX_VALUE;
-			dbl[4001] = Double.MIN_VALUE;
-			dbl[4002] = Double.NaN;
-			dbl[4003] = Double.POSITIVE_INFINITY;
-			dbl[4004] = Double.NEGATIVE_INFINITY;
-
-			long time1, time2, time3;
-			time1 = System.currentTimeMillis();
-			byte[] data = null;
-			for (int i = 0; i < 1000; i++)
-				data = toByteArray(dbl);
-			time2 = System.currentTimeMillis();
-			double[] result = null;
-			for (int i = 0; i < 1000; i++)
-				result = doubleArrayFromByteArray(data);
-			time3 = System.currentTimeMillis();
-
-			int count = 0;
-			for (int i = 0; i < result.length; i++)
-				if (dbl[i] != result[i]) {
-					count++;
-					System.out.println("" + i + " was " + dbl[i]
-							+ " after transform " + result[i]);
-				}
-			System.out.println("double[] length is " + dbl.length);
-			System.out.println("double[] -> byte[] -> double[] "
-					+ ((double) (time3 - time1) / 1000.0) + " " + count
-					+ " errors ");
-			System.out.println("double[] -> byte[] "
-					+ ((double) (time2 - time1) / 1000.0)
-					+ " byte[] -> double[] "
-					+ ((double) (time3 - time2) / 1000.0));
-		}
-
-		{
-			float[] dbl = new float[100005];
-			for (int i = 0; i < 100000; i++)
-				if (i < 50000)
-					dbl[i] = i;
-				else
-					dbl[i] = -i;
-			dbl[100000] = Float.MAX_VALUE;
-			dbl[100001] = Float.MIN_VALUE;
-			dbl[100002] = Float.NaN;
-			dbl[100003] = Float.POSITIVE_INFINITY;
-			dbl[100004] = Float.NEGATIVE_INFINITY;
-
-			long time1, time2;
-			time1 = System.currentTimeMillis();
-			byte[] data = toByteArray(dbl);
-			float[] result = floatArrayFromByteArray(data);
-			time2 = System.currentTimeMillis();
-
-			int count = 0;
-			for (int i = 0; i < result.length; i++)
-				if (dbl[i] != result[i]) {
-					count++;
-					System.out.println("" + i + " was " + dbl[i]
-							+ " after transform " + result[i]);
-				}
-			System.out.println("float[] length is " + dbl.length);
-			System.out.println("float[] -> byte[] -> float[] ... "
-					+ (time2 - time1) + " " + count + " errors ");
-		}
-
-		{
-			long[] dbl = new long[100002];
-			for (int i = 0; i < 100000; i++)
-				if (i < 50000)
-					dbl[i] = i;
-				else
-					dbl[i] = -i;
-			dbl[100000] = Long.MAX_VALUE;
-			dbl[100001] = Long.MIN_VALUE;
-
-			long time1, time2;
-			time1 = System.currentTimeMillis();
-			byte[] data = toByteArray(dbl);
-			long[] result = longArrayFromByteArray(data);
-			time2 = System.currentTimeMillis();
-
-			int count = 0;
-			for (int i = 0; i < result.length; i++)
-				if (dbl[i] != result[i]) {
-					count++;
-					System.out.println("" + i + " was " + dbl[i]
-							+ " after transform " + result[i]);
-				}
-			System.out.println("long[] length is " + dbl.length);
-			System.out.println("long[] -> byte[] -> long[] ... "
-					+ (time2 - time1) + " " + count + " errors ");
-		}
-
-		{
-			int[] dbl = new int[100002];
-			for (int i = 0; i < 100000; i++)
-				if (i < 50000)
-					dbl[i] = i;
-				else
-					dbl[i] = -i;
-			dbl[100000] = Integer.MAX_VALUE;
-			dbl[100001] = Integer.MIN_VALUE;
-
-			long time1, time2;
-			time1 = System.currentTimeMillis();
-			byte[] data = toByteArray(dbl);
-			int[] result = intArrayFromByteArray(data);
-			time2 = System.currentTimeMillis();
-
-			int count = 0;
-			for (int i = 0; i < result.length; i++)
-				if (dbl[i] != result[i]) {
-					count++;
-					System.out.println("" + i + " was " + dbl[i]
-							+ " after transform " + result[i]);
-				}
-			System.out.println("int[] length is " + dbl.length);
-			System.out.println("int[] -> byte[] -> int[] ... "
-					+ (time2 - time1) + " " + count + " errors ");
-		}
-
-		{
-			short[] dbl = new short[100002];
-			for (int i = 0; i < 100000; i++)
-				if (i < 50000)
-					dbl[i] = (short) i;
-				else
-					dbl[i] = (short) -i;
-			dbl[100000] = Short.MAX_VALUE;
-			dbl[100001] = Short.MIN_VALUE;
-
-			long time1, time2;
-			time1 = System.currentTimeMillis();
-			byte[] data = toByteArray(dbl);
-			short[] result = shortArrayFromByteArray(data);
-			time2 = System.currentTimeMillis();
-
-			int count = 0;
-			for (int i = 0; i < result.length; i++)
-				if (dbl[i] != result[i]) {
-					count++;
-					System.out.println("" + i + " was " + dbl[i]
-							+ " after transform " + result[i]);
-				}
-			System.out.println("short[] length is " + dbl.length);
-			System.out.println("short[] -> byte[] -> short[] ... "
-					+ (time2 - time1) + " " + count + " errors ");
-		}
-	}
-	*/
-}
-
-
-
 /**
  * SavedDataSource is a data source for reading SavedData files. SavedData files
- * are Sybase tables. Each file has a file index number that is unique to the
+ * are SQL tables. Each file has a file index number that is unique to the
  * owner and increments with each save. Each file has a file alias number that
  * has meaning to the owner. For the SaveRestore owner, the file alias number is
  * the Save File number and one Save File number should only be mapped to one
@@ -463,25 +42,16 @@ class ByteArrayConverter
  * has meaning to the owner; for example the collection alias for an SDA file is
  * the case number. Multiple collection indices may map a given collection
  * alias. The duplicates represent previous store overs in SDA's sense.
- * 
- * @author Kevin Cahill, Denise Finstrom
  */
-
 public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.Constants, AcnetErrors
 {
 	static final HashSet<String> owners = new HashSet<>(Arrays.asList("ColliderShot", "E835Store", 
 																		"PbarTransferShot", "RecyclerShot"));
 
 	private Vector<WhatDaq> userRequestList = null;
-	private List<Object> snapShotRequestList = null;
+	private List<SnapRequest> snapShotRequestList = null;
 
 	private PoolUser user = null;
-
-	/**
-	 * any ReportCallbacks the last time was checked
-	 */
-	@SuppressWarnings("unused")
-	private boolean anyReporters = false;
 
 	/**
 	 * if snapshots are saved as blobs
@@ -906,8 +476,8 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 		if (openedSource)
 			throw new AcnetStatusException(DAE_SAVE_GET_EXCEPTION, "Source already open");
 
-		userRequestList = new Vector<WhatDaq>();
-		snapShotRequestList = new LinkedList<Object>();
+		userRequestList = new Vector<>();
+		snapShotRequestList = new LinkedList<>();
 		openedSource = true;
 		// delete previous alias
 		//if (deleteOlderAlias)
@@ -983,7 +553,7 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					title = rs.getString(4);
 					comment1 = rs.getString(5);
 					comment2 = rs.getString(6);
-					comment3 = rs.getString(7);
+					//comment3 = rs.getString(7);
 					protectOper = rs.getBoolean(8);
 					protectArchive = rs.getBoolean(9);
 					protectModify = rs.getBoolean(10);
@@ -1074,8 +644,7 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 				try {
 					scope = FTPScope.getFTPScope(snapSpecification);
 					trigger = SnapScope.getTrigger(snapSpecification);
-					ftpReq = new FTPRequest(device, null, trigger, scope, null,
-							new ReArm(false));
+					ftpReq = new FTPRequest(device, null, trigger, scope, null, new ReArm(false));
 				} catch (Exception e) {
 					//++numGetFTPHeaderException;
 					//System.out.println("SavedDataSource snapSpecification: "
@@ -1097,27 +666,8 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 		}
 	}
 
-	/**
-	 * Read the SnapShot file header.
-     * @param fileIndex
-     * @param collectionIndex
-     * @param device
-     * @return a read of SnapShot file header
-     * @exception AcnetStatusException
-	 */
-	private ExtendedSnapRequest getSnapHeader(int fileIndex, int collectionIndex,
-			WhatDaq device) throws AcnetStatusException {
-		//if ( DO_SYBASE )
-		 //   query = "select file_index, file_alias, collection_index, collection_alias "
-		//		+ ", set_alias, owner, error, date, di, specification_event from srdb.finstrom.snap_header_blob "
-		//		+ " where file_index = "
-		//		+ fileIndex
-		//		+ " and "
-		//		+ "collection_index = "
-		//		+ collectionIndex
-		//		+ " and di = "
-		//		+ device.getDeviceIndex() + " and is_ftp=0";
-		//if ( DO_POSTGRES )
+	private ExtendedSnapRequest getSnapHeader(int fileIndex, int collectionIndex, WhatDaq device) throws AcnetStatusException
+	{
 		final String query = "SELECT file_index, file_alias, collection_index, collection_alias "
 				+ ", set_alias, owner, error, date, di, specification_event FROM srdb.snap_header_blob "
 				+ " WHERE file_index = "
@@ -1135,20 +685,10 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 		long snapDate = System.currentTimeMillis(); 
 		int snapError = DAE_SAVE_HEADER_NOTFOUND;
 
-		//if (classBugs)
-		//	System.out
-		//			.println("GETSNAPHEADER: fileAlias=" + fileAlias
-		//					+ ", fileIndex=" + fileIndex
-		//					+ ", fetchCollectionAlias=" + fetchCollectionAlias
-		//					+ ", fetchSetAlias=" + fetchSetAlias);
 		try {
-			//if (classBugs)
-			//	System.out.println(query);
 			ResultSet rs;
-			//if ( DO_SYBASE )
-			 //   rs = BDBS.executeQuery(query);
-			//if ( DO_POSTGRES )
 			    rs = getPostgreSQLServer("srdb").executeQuery(query);
+
 			if (rs.next()) {
 				fileIndex = rs.getInt(1);
 				fileAlias = rs.getInt(2);
@@ -1166,53 +706,29 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					snapReq = new SnapRequest(device, null, trigger, scope,
 							null, reArm);
 				} catch (Exception e) {
-					//++numGetSnapHeaderException;
-					//System.out.println("SavedDataSource snapSpecification: "
-					//		+ snapSpecification + ", e: " + e);
-					//e.printStackTrace();
 				}
 			}
 			rs.close();
 			return (new ExtendedSnapRequest(snapReq, snapDate, snapError));
 		} catch (SQLException sqe) {
-			//++numGetSnapHeaderException;
-			//System.out.println("SavedData, getSnapHeader, SQL exception" + sqe);
 			throw new AcnetStatusException(DAE_SAVE_GET_EXCEPTION, "SavedData, getSnapHeader, SQL exception", sqe);
 		} catch (Exception ex) {
-			//++numGetSnapHeaderException;
-			//System.out.println("SavedData, getSnapHeader, exception" + ex);
-			//ex.printStackTrace();
 			throw new AcnetStatusException(DAE_SAVE_GET_EXCEPTION, "SavedData, getSnapHeader, exception", ex);
 		}
 	}
 
-	/**
-	 * Translates a file alias to the largest file index not marked for delete
-	 * for that file alias.
-     * @exception AcnetStatusException
-	 */
-	public void aliasToIndex() throws AcnetStatusException {
-		//if ( DO_SYBASE )
-		 //   query = "select max(file_index) from srdb.finstrom.save_header "
-		//		+ "where file_alias = " + fileAlias + " and delete_file = 0 ";
-		//if ( DO_POSTGRES )
+	public void aliasToIndex() throws AcnetStatusException
+	{
 		final String query = "SELECT max(file_index) FROM srdb.save_header "
 				+ "WHERE file_alias = " + fileAlias + " AND delete_file = 0 ";
 		try {
-			//if ( DO_SYBASE )
-			 //   rs = BDBS.executeQuery(query);
-			//if ( DO_POSTGRES )
 			final ResultSet rs = getPostgreSQLServer("srdb").executeQuery(query);
 			rs.next();
 			fileIndex = rs.getInt(1);
 			rs.close();
 		} catch (SQLException sqe) {
-			//++numAliasToIndexException;
-			//System.out.println("SavedData, aliasToIndex, SQL exception" + sqe);
 			throw new AcnetStatusException(DAE_SAVE_GET_EXCEPTION, "SavedData, aliasToIndex, SQL exception", sqe);
 		} catch (Exception ex) {
-			//++numAliasToIndexException;
-			//System.out.println("SavedData, aliasToIndex, exception" + ex);
 			throw new AcnetStatusException(DAE_SAVE_GET_EXCEPTION, "SavedData, aliasToIndex, exception", ex);
 		}
 	}
@@ -1222,27 +738,14 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 		this.user = user;
 	}
 
-	/**
-	 * Inserts a single data acquisition user request into the pool.
-	 * 
-	 * @param snapRequest
-	 * @param priority
-	 *            priority of this request (ignored).
-	 */
-	public void insertUserRequest(SnapRequest snapRequest) //, int priority) {
+	public void insertUserRequest(SnapRequest snapRequest)
 	{
-		// add this request to the queue
 		snapShotRequestList.add(snapRequest);
 	}
 
-	/**
-	 * Inserts a single data acquisition user request into the pool.
-	 * 
-	 */
 	@Override
-	public void insert(WhatDaq userWhatDaq) //, int priority)
+	public void insert(WhatDaq userWhatDaq)
 	{
-		// add this request to the queue
 		userRequestList.addElement(userWhatDaq);
 	}
 
@@ -1251,43 +754,17 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 	{
 		final long now = System.currentTimeMillis();
 
-		// find and mark for delete all requests of this user
-		Enumeration<WhatDaq> enum0;
-		enum0 = userRequestList.elements();
-		while (enum0.hasMoreElements()) {
-			WhatDaq userPerhaps = enum0.nextElement();
-			if (error != 0 && !userPerhaps.isMarkedForDelete()) {
-				//userPerhaps.getReceiveData().receiveData(userPerhaps, error, 0, null, now, null);
-				userPerhaps.getReceiveData().receiveData(error, 0, null, now);
-			}
-			userPerhaps.setMarkedForDelete();
+		for (WhatDaq whatDaq : userRequestList) {
+			if (error != 0 && !whatDaq.isMarkedForDelete())
+				whatDaq.getReceiveData().receiveStatus(error, now, 0);
+			whatDaq.setMarkedForDelete();
 		}
-		Iterator<Object> snaps = snapShotRequestList.iterator();
-		for (SnapRequest userPerhaps = null; snaps.hasNext();) {
-			userPerhaps = (SnapRequest) snaps.next();
-			//if (error != 0) { // && !userPerhaps.getDelete()) {
-				//if (userPerhaps.getSuppressRMICallback()) {
-					//userPerhaps.callback.plotData(userPerhaps,
-					//		now, null, error, 0, null, null, null);
-					userPerhaps.callback.plotData(now, error, 0, null, null, null);
-				//} else
-				//	try {
-				//		userPerhaps.callback.plotdata(timeStamp, null,
-				//				error, 0, null, null, null);
-				//	} catch (Exception e) {
-				//		++numCancelUserRequestException;
-				//	}
-			//}
-			userPerhaps.setDelete();
+		for (SnapRequest req : snapShotRequestList) {
+			req.callback.plotData(now, error, 0, null, null, null);
+			req.setDelete();
 		}
 	}
 
-	/**
-	 * Initiate data collection. SavedData: read the save file.
-	 * 
-	 * @param forceRetransmission
-	 *            force processing when true.
-	 */
 	@Override
 	public synchronized boolean process(boolean forceRetransmission)
 	{
@@ -1303,9 +780,7 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 			whereClause = saveEvent.getWhereClause();
 			useWhereClause = saveEvent.isByWhereClause();
 		}
-		// snapshot requests are on the snapShotRequestList
 
-		// SnapRequest nxtReq;
 		while (!snapShotRequestList.isEmpty()) {
 			Object o = snapShotRequestList.remove(0);
 			if (o instanceof SnapRequest) {
@@ -1320,13 +795,11 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 				getFTPDataBlobs(nxtReq, fileIndices, collectionIndices);
 			}
 		}
-		// scalar requests are on the userRequestList
+		
 		WhatDaq nxtWhat;
-		// pull and read requests from the queue
+		
 		while (!userRequestList.isEmpty()) {
 			nxtWhat = userRequestList.firstElement();
-			// System.out.println("SaveDataSource, processing " + nxtWhat + " in
-			// " + Thread.currentThread().getName());
 			userRequestList.removeElementAt(0);
 			if (nxtWhat.isMarkedForDelete())
 				continue;
@@ -1334,39 +807,20 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 				getDataWhereClause(nxtWhat, whereClause);
 			else
 				getData(nxtWhat, fileIndices, collectionIndices);
-			// System.out.println("SaveDataSource, process complete for " +
-			// nxtWhat);
 		}
-		// System.out.println("SavedDataSource, calling dispositionComplete");
 		user.complete();
-		// System.out.println("SavedDataSource, processUserRequests returning");
 		return false;
 	}
 
-	/**
-	 * Fill Snapshot request list.
-	 * 
-	 * @param snapReqs
-	 *            Snapshot request list
-	 */
-	public void getSnapShotReqList(List<Object> snapReqs) {
+	public void getSnapShotReqList(List<SnapRequest> snapReqs)
+	{
 		snapShotRequestList = snapReqs;
 	}
 
-	/**
-	 * Get the data, sending it to receiveData of whatDaq.
-	 * 
-	 * @param whatDaq
-	 *            what to get
-     * @param fileIndices
-     * @param collectionIndices
-	 */
 	private void getData(WhatDaq whatDaq, int[] fileIndices, int[] collectionIndices)
 	{
-		//++numGetData;
 		int segmentNumber = 0;
 		int error = 0;
-		//CollectionContext holdContext = null;
 		long holdTime = 0;
 
 		long time = System.currentTimeMillis();
@@ -1383,60 +837,26 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 		boolean firstTime = true, incompleteData = false;
 		byte[] finalData = null;
 		byte[] data = null;
-		//boolean debug=false;
-		//if (false && whatDaq.getDeviceName().startsWith("I:SBD04X")) {
-		//	System.out.println("getData: " + whatDaq);
-		//	debug = true;
-		//}
 
 		try {
-			finalData = new byte[MAXDATASIZE]; // Binary data from database
-			//if (classBugs)
-			//	System.out.println("GETDATA: fileIndex=" + fileIndex
-			//			+ ", fileAlias=" + fileAlias
-			//			+ ", fetchCollectionAlias=" + fetchCollectionAlias
-			//			+ ", fetchSetAlias=" + fetchSetAlias);
+			finalData = new byte[MAXDATASIZE];
 			if (sequencedDataSet == false) { // SaveRestore data
 				aliasToIndex();
 
-				//if ( DO_SYBASE )
-				 //   srQuery = "select di, pi, length, error, timestamp, data "
-				//		+ "from srdb.finstrom.srsave_data where "
-				//		+ "file_index = " + fileIndex + " and di = "
-				//		+ whatDaq.getDeviceIndex() + " and pi = "
-				//		+ whatDaq.getPropertyIndex() + " order by segment";
-				//if ( DO_POSTGRES )
 				final String srQuery = "SELECT di, pi, length, error, timestamp, data "
 						+ "FROM srdb.srsave_data where "
 						+ "file_index = " + fileIndex + " AND di = "
 						+ whatDaq.getDeviceIndex() + " AND pi = "
 						+ whatDaq.getPropertyIndex() + " ORDER BY segment";
 
-			//	if (classBugs)
-			//		System.out
-			//				.println("SavedDataSource.getData(): executing query...");
-			//	if (classBugs)
-			//		System.out.println(srQuery);
-				//if ( DO_SYBASE )
-				 //   rs = BDBS.executeQuery(srQuery);
-				//if ( DO_POSTGRES )
 				final ResultSet rs = getPostgreSQLServer("srdb").executeQuery(srQuery);
-			//	if (classBugs)
-			//		System.out
-			//				.println("SavedDataSource.getData(): done executing query.");
 
 				rs.next();
 
 				try {
 					error = rs.getInt(4);
 				} catch (Exception e) {
-					error = SAV_RST_NODI;
-
-					//holdContext = new SavedDataContext(owner, fileAlias,
-					//			fileIndex);
-					data = null;
-					//whatDaq.getReceiveData().receiveData(whatDaq, error, 0, data, time, holdContext);
-					whatDaq.getReceiveData().receiveData(error, 0, data, time);
+					whatDaq.getReceiveData().receiveStatus(SAV_RST_NODI, time, 0);
 
 					return;
 				}
@@ -1452,8 +872,7 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					holdData = rs.getBytes(6);
 				}
 				firstTime = false;
-				//holdContext = new SavedDataContext(owner, fileAlias, fileIndex);
-				if (holdData == null) // fill data buffer with null
+				if (holdData == null)
 					finalData = null;
 				else {
 					lengthDiff = padAmount(dbLength, holdData.length,
@@ -1461,39 +880,21 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					if (lengthDiff > 0) {
 						tmpData = padData(holdData, holdData.length
 								+ lengthDiff);
-						holdData = tmpData; // Point to new array
+						holdData = tmpData;
 					}
 					System.arraycopy(holdData, 0, finalData, 0, holdData.length);
 				}
 
-				//if (classBugs)
-				//	System.out.println("SavedDataSource.getData(): finalData="
-				//			+ finalData);
-
-				//if (classBugs)
-				//	System.out.println("Read saved data: di="
-				//			+ whatDaq.getDeviceIndex() + ", pi="
-				//			+ whatDaq.getPropertyIndex() + ", length="
-				//			+ whatDaq.getLength() + ", err=" + error
-				//			+ ", time=" + time + ", data=" + finalData);
 				/*
 				 * if there's more than 1 record (length > 192), all we need is
 				 * the data and length
 				 */
 				while (rs.next()) {
-					//if (classBugs)
-					//	System.out
-					//			.println("SavedDataSource.getData(): doing segment #"
-					//					+ segmentNumber);
 					segmentNumber++;
-					// if I get here, I'm in the second segment of data, so I
-					// know I'm not in error
-					// and there's no need to check for null data
 					dbLength = rs.getInt(3);
 
 					holdData = rs.getBytes(6);
 					if (holdData == null) {
-						//System.out.println("PROBLEM - SavedDataSource.getData(): data segment multiple in S/R data is null!!");
 						finalData = null;
 					} else {
 						lengthDiff = padAmount(dbLength, holdData.length, segmentNumber);
@@ -1508,16 +909,6 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 				}
 				rs.close();
 			} else {
-				//if ( DO_SYBASE )
-				 //   sdaQuery = "select sd.file_index, file_alias, collection_index, "
-				//		+ "collection_alias, set_alias, segment, error, timestamp, data, "
-				//		+ "length, offset from srdb.finstrom.sda_data sd, srdb.finstrom.save_header sh "
-				//		+ "where sd.file_index = sh.file_index and di = "
-				//		+ whatDaq.getDeviceIndex()
-				//		+ " and pi = "
-				//		+ whatDaq.getPropertyIndex()
-				//		+ " and ((sd.file_index = " + fileIndices[0];
-				//if ( DO_POSTGRES )
 				final String sdaQuery = "SELECT sd.file_index, file_alias, collection_index, "
 						+ "collection_alias, set_alias, segment, error, timestamp, data, "
 						+ "length, offsett FROM srdb.sda_data sd, srdb.save_header sh "
@@ -1537,20 +928,12 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					}
 				} else {
 					sdaBuffer.append(" and collection_index = " + collectionIndices[0] + ")");
-					// fileIndices and collectionIndices are the same length in
-					// this case
 					for (int ii = 1; ii < fileIndices.length; ii++) {
 						sdaBuffer.append(" or (sd.file_index = " + fileIndices[ii] + " and collection_index = " + collectionIndices[ii] + ")");
 					}
 				}
 				sdaBuffer.append(sdaQueryEnd);
-				//if (debug || classBugs)
-				//	System.out
-				//			.println("SavedDataSource.getData(): executing query = "
-				//					+ sdaBuffer.toString());
-				//if ( DO_SYBASE )
-				 //   rs = BDBS.executeQuery(sdaBuffer.toString());
-				//if ( DO_POSTGRES )
+
 				final ResultSet rs = getPostgreSQLServer("srdb").executeQuery(sdaBuffer.toString());
 
 				while (rs != null && rs.next()) {
@@ -1571,76 +954,31 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 
 					short dbSegment = rs.getShort(6);
 					// might be other matchers, Store Checker does not want this					
-					if ((whatDaq.getOffset() < dbOffset)			
-							|| (whatDaq.getOffset() > (dbOffset + dbLength))
-							|| ((whatDaq.getOffset() + whatDaq
-									.getLength()) > (dbOffset + dbLength))) {
-						//++numNoSkipWhereNotEncompassing;
-						//if (false && debug) System.out.println("skip, dbLength: " + dbLength + ", dbOffset: " + dbOffset);
-						//if (false) continue;
-					}
 					if (firstTime == true) {
-						//holdContext = new SDAContext(owner, dbFileAlias,
-						//		dbFileIndex, dbCollectionAlias,
-						//		dbCollectionIndex, dbSetAlias);
 						if (dbSegment != 0)
 							incompleteData = true;
 					}
-					if (((dbFileIndex != saveFileIndex)
-							|| (dbCollectionIndex != saveCollectionIndex) || (dbSetAlias != saveSetAlias))
-							&& (firstTime != true)) {
+					if (((dbFileIndex != saveFileIndex) || (dbCollectionIndex != saveCollectionIndex) || (dbSetAlias != saveSetAlias)) && (firstTime != true)) {
 						if (incompleteData)
-							//whatDaq.getReceiveData().receiveData(whatDaq, DAE_SAVE_INCOMPLETE_DATA, 0,
-							//										null, time, holdContext);
-							whatDaq.getReceiveData().receiveData(DAE_SAVE_INCOMPLETE_DATA, 0, null, time);
+							whatDaq.getReceiveData().receiveStatus(DAE_SAVE_INCOMPLETE_DATA, time, 0);
 						else {
 							if (whatDaq.getLength() > dbLength && whatDaq.getLength() == whatDaq .getMaxLength() && whatDaq.getOffset() == 0) {
-								//if (debug) System.out.println("restoreDesired");
 								restoreDesiredLengthOffset = true;
 								whatDaq.setLengthOffset(dbLength, dbOffset);
 							}
-							if ((whatDaq.getOffset() < dbOffset)
-									|| (whatDaq.getOffset() > (dbOffset + dbLength))
-									|| ((whatDaq.getOffset() + whatDaq
-											.getLength()) > (dbOffset + dbLength))) {
-								//System.out
-								//		.println("SavedDataSource.getData, refusal # 1, o: "
-								//				+ whatDaq.getOffset()
-								//				+ ", l: "
-								//				+ whatDaq.getLength()
-								//				+ ", dbo: "
-								//				+ dbOffset
-								//				+ ", dbl: "
-								//				+ dbLength
-								//				+ ", w: " + whatDaq);
-								error = SAV_RST_ILLEN;
-								data = null;
+							if ((whatDaq.getOffset() < dbOffset) || (whatDaq.getOffset() > (dbOffset + dbLength)) || ((whatDaq.getOffset() + whatDaq .getLength()) > (dbOffset + dbLength))) {
 								finalData = new byte[MAXDATASIZE];
+								whatDaq.getReceiveData().receiveData(SAV_RST_ILLEN, time, 0);
 							} else if (finalData == null) { // no data
-								data = null;
 								finalData = new byte[MAXDATASIZE];
-							} else {// copy data
-								// where from ???? Where finel data sets (?)
+								whatDaq.getReceiveData().receiveData(SAV_RST_NODATA, time, 0);
+							} else {
 								data = new byte[whatDaq.getLength()];
-								// comment by tbolsh - we have been here before!
-								System.arraycopy(finalData, whatDaq.getOffset()
-										- dbOffset, data, 0, whatDaq
-										.getLength());
-								// System.arraycopy(finalData, 0, data, 0,
-								// whatDaq.getLength());
-								//if (debug || classBugs)
-								//	System.out
-								//			.println("SavedDataSource.getData(): calling receiveData()\n"
-								//					+ dbFileAlias + ", " + dbCollectionAlias 
-								//					+ ", " + dbSetAlias);
+								System.arraycopy(finalData, whatDaq.getOffset() - dbOffset, data, 0, whatDaq.getLength());
+								whatDaq.getReceiveData().receiveData(data, 0, time, 0);
 							}
-							//whatDaq.getReceiveData().receiveData(whatDaq, error, 0, data, time, holdContext);
-							whatDaq.getReceiveData().receiveData(error, 0, data, time);
 						}
 						segmentNumber = 0;
-						//holdContext = new SDAContext(owner, dbFileAlias,
-						//		dbFileIndex, dbCollectionAlias,
-						//		dbCollectionIndex, dbSetAlias);
 						incompleteData = (dbSegment != 0);
 					}
 					saveFileIndex = dbFileIndex;
@@ -1648,30 +986,16 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					saveSetAlias = dbSetAlias;
 					error = rs.getShort(7);
 
-					//holdTime = rs.getTimestamp(8);
 					holdTime = rs.getLong(8);
-
-					//if (holdTime != null)
-						//time = holdTime.getTime();
 
 					holdData = rs.getBytes(9);
 					dbLength = rs.getInt(10);
 					dbOffset = rs.getInt(11);
 
 					if ((holdData == null) || (incompleteData == true))
-						finalData = null; // fill data buffer with null
-					else { // not in error, so get and copy data
+						finalData = null;
+					else {
 						lengthDiff = padAmount(dbLength, holdData.length, segmentNumber);
-						//if (classBugs) {
-						//	if (lengthDiff < 0)
-						//		System.out.println("dsf:  di = "
-						//				+ whatDaq.getDeviceIndex() + ", pi = "
-						//				+ whatDaq.getPropertyIndex()
-						//				+ ", dbLength = " + dbLength
-						//				+ ", holdData.length = "
-						//				+ holdData.length
-						//				+ ", segmentNumber = " + segmentNumber);
-						//}
 						if (lengthDiff > 0) {
 							tmpData = padData(holdData, holdData.length
 									+ lengthDiff);
@@ -1679,22 +1003,9 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 						}
 						if (finalData == null)
 							finalData = new byte[MAXDATASIZE];
-						// try{
 						System.arraycopy(holdData, 0, finalData,
 								(segmentNumber * MAXBYTESINROW),
 								holdData.length);
-						/*
-						 * }catch(Exception exc){ System.out.println("The
-						 * case!"); if(holdData!=null)
-						 * System.out.println("holdData length is
-						 * "+holdData.length); else System.out.println("holdData
-						 * is null"); if(finalData!=null)
-						 * System.out.println("finalData length is
-						 * "+finalData.length); else
-						 * System.out.println("finalData is null");
-						 * System.out.println("segmentNumber is
-						 * "+segmentNumber); exc.printStackTrace(); }
-						 */
 					}
 					segmentNumber++;
 					firstTime = false;
@@ -1702,61 +1013,21 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 				rs.close();
 			}
 
-			if (firstTime == true) { // We only get here if the query returns
-										// no data at all
-				for (int ii = 0; ii < fileIndices.length; ii++) {
-					if (sequencedDataSet == false) // SaveRestore data
-						//holdContext = new SavedDataContext(owner, fileAlias,
-						//		fileIndex);
-						;
-					else { // SDA data
-						if (collectionIndices == null)
-							;
-							//holdContext = new SDAContext(owner, 0,
-							//		fileIndices[ii], 0, 0, 0);
-						else
-							;
-							//holdContext = new SDAContext(owner, 0,
-							//		fileIndices[ii], 0, collectionIndices[ii],
-							//		0);
-					}
-					error = SAV_RST_NODATA;
-					data = null;
-					//whatDaq.getReceiveData().receiveData(whatDaq, error, 0, data, time, holdContext);
-					whatDaq.getReceiveData().receiveData(error, 0, data, time);
-				}
+			if (firstTime == true) {
+				whatDaq.getReceiveData().receiveStatus(SAV_RST_NODATA, time, 0);
 			} else {// query returned a record
-				if (incompleteData == true) // missing data segments
-				{
-					//if (classBugs)
-					//	System.out.println("in incompleteData");
-					//whatDaq.getReceiveData().receiveData(whatDaq, DAE_SAVE_INCOMPLETE_DATA, 0, null, time, holdContext);
-					whatDaq.getReceiveData().receiveData(DAE_SAVE_INCOMPLETE_DATA, 0, null, time);
+				if (incompleteData == true) {// missing data segments
+					whatDaq.getReceiveData().receiveStatus(DAE_SAVE_INCOMPLETE_DATA, time, 0);
 				} else {
-					if (whatDaq.getLength() > dbLength
-							&& whatDaq.getLength() == whatDaq.getMaxLength()
-							&& whatDaq.getOffset() == 0) {
+					if (whatDaq.getLength() > dbLength && whatDaq.getLength() == whatDaq.getMaxLength() && whatDaq.getOffset() == 0) {
 						restoreDesiredLengthOffset = true;
 						whatDaq.setLengthOffset(dbLength, dbOffset);
 					}
-					if ((whatDaq.getOffset() < dbOffset)
-							|| (whatDaq.getOffset() > (dbOffset + dbLength))
-							|| ((whatDaq.getOffset() + whatDaq.getLength()) > (dbOffset + dbLength))) { // users
-																										// request
-																										// can't
-																										// be
-																										// satisfied
-																										// with
-																										// saved
-																										// data
-						//System.out.println("SavedDataSource.getData, refusal # 2, o: "
-						//		+ whatDaq.getOffset() + ", l: "
-						//		+ whatDaq.getLength() + ", dbo: " + dbOffset
-						//		+ ", dbl: " + dbLength + ", w: " + whatDaq);
-						error = SAV_RST_ILLEN;
-						data = null;
+					if ((whatDaq.getOffset() < dbOffset) || (whatDaq.getOffset() > (dbOffset + dbLength)) || ((whatDaq.getOffset() + whatDaq.getLength()) > (dbOffset + dbLength))) { 
+						whatDaq.getReceiveData().receiveStatus(SAV_RST_ILLEN, time, 0);
+
 					} else if (finalData == null) // no data
-						data = null;
+						whatDaq.getReceiveData().receiveStatus(SAV_RST_NODATA, time, 0);
 					else {
 						data = new byte[whatDaq.getLength()];
 						// System.out.println("off "+whatDaq.getOffset()+" len
@@ -1771,19 +1042,22 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 						//			.println("SavedDataSource.getData(): ending receiveData()\n"
 						////					+ dbFileAlias + ", " + dbCollectionAlias 
 						//					+ ", " + dbSetAlias);
+
+						whatDaq.getReceiveData().receiveData(data, 0, time, 0);
 					}
 					//whatDaq.getReceiveData().receiveData(whatDaq, error, 0, data, time, holdContext);
-					whatDaq.getReceiveData().receiveData(error, 0, data, time);
+					//whatDaq.getReceiveData().receiveData(error, 0, data, time);
 				}
 			}
-		} catch (Exception ex) {
+		} catch (Exception e) {
 			//++numGetDataException;
-			error = DAE_SAVE_GET_EXCEPTION;
+			//error = DAE_SAVE_GET_EXCEPTION;
 			//System.out.println("SavedDataSource.getData(): " + ex
 			//		+ "\n\tquery: " + srQuery);
 			//ex.printStackTrace();
 			//whatDaq.getReceiveData().receiveData(whatDaq, error, 0, data, time, holdContext);
-			whatDaq.getReceiveData().receiveData(error, 0, data, time);
+			//whatDaq.getReceiveData().receiveData(error, 0, data, time);
+			whatDaq.getReceiveData().receiveStatus(DAE_SAVE_GET_EXCEPTION, time, 0);
 		}
 	}
 
@@ -1932,25 +1206,16 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 						//++numGetDataWhereIncomplete;
 						//whatDaq.getReceiveData().receiveData(whatDaq, DAE_SAVE_INCOMPLETE_DATA, 0, null, 
 						//										holdTime == null ? 0 : holdTime.getTime(), holdContext);
-						whatDaq.getReceiveData().receiveData(DAE_SAVE_INCOMPLETE_DATA, 0, null, holdTime);
+						whatDaq.getReceiveData().receiveData(DAE_SAVE_INCOMPLETE_DATA, holdTime, 0);
 																//holdTime == null ? 0 : holdTime.getTime());
 					} else {
-						if (whatDaq.getLength() > dbLength
-								&& whatDaq.getLength() == whatDaq
-										.getMaxLength()
-								&& whatDaq.getOffset() == 0) {
+						if (whatDaq.getLength() > dbLength && whatDaq.getLength() == whatDaq .getMaxLength() && whatDaq.getOffset() == 0) {
 							restoreDesiredLengthOffset = true;
 							whatDaq.setLengthOffset(dbLength, dbOffset);
 						}
-						if ((whatDaq.getOffset() < dbOffset)
-								|| (whatDaq.getOffset() > (dbOffset + dbLength))
-								|| ((whatDaq.getOffset() + whatDaq.getLength()) > (dbOffset + dbLength))) { // users
-																											// request
-																											// can't
-																											// be
-																											// satisfied
-																											// with
-																											// saved																											// data
+						if ((whatDaq.getOffset() < dbOffset) || (whatDaq.getOffset() > (dbOffset + dbLength)) || ((whatDaq.getOffset() + whatDaq.getLength()) > (dbOffset + dbLength))) { 
+							// users request cant be satisfied with saved data
+
 							//lastGetDataWhereBadLength = "SavedDataSource.getDataWhereClause, refusal # 1, dbo: "
 							//		+ dbOffset
 							//		+ ", dbl: "
@@ -1958,15 +1223,20 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 							//		+ ", w: "
 							//		+ whatDaq;
 							//++numGetDataWhereBadLength;
+							/*
 							error = SAV_RST_ILLEN;
 							data = null;
+							*/
 							finalData = new byte[MAXDATASIZE];
+							whatDaq.getReceiveData().receiveStatus(holdError, holdTime, 0);
 						} else if (finalData == null) { // no data
-							data = null;
+							//data = null;
 							finalData = new byte[MAXDATASIZE];
+							whatDaq.getReceiveData().receiveStatus(holdError, holdTime, 0);
 						} else {// copy data
 							data = new byte[whatDaq.getLength()];
 							System.arraycopy(finalData, 0, data, 0, whatDaq .getLength());
+							whatDaq.getReceiveData().receiveData(data, 0, holdTime, 0);
 						}
 						//++numGetDataWhereOk;
 						//if (debug || classBugs)
@@ -1981,7 +1251,7 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 						//					+ ", ");// + holdContext);
 						//whatDaq.getReceiveData().receiveData(whatDaq, holdError, 0, data, 
 						//										holdTime == null ? 0 : holdTime.getTime(), holdContext);
-						whatDaq.getReceiveData().receiveData(holdError, 0, data, holdTime); //holdTime == null ? 0 : holdTime.getTime());
+						//whatDaq.getReceiveData().receiveData(holdError, 0, data, holdTime); //holdTime == null ? 0 : holdTime.getTime());
 					}
 					segmentNumber = 0;
 					incompleteData = (dbSegment != 0);
@@ -2059,31 +1329,26 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					//	System.out.println("in incompleteData");
 					//++numGetDataWhereIncomplete;
 					//whatDaq.getReceiveData().receiveData(whatDaq, DAE_SAVE_INCOMPLETE_DATA, 0, null, holdTime.getTime(), holdContext);
-					whatDaq.getReceiveData().receiveData(DAE_SAVE_INCOMPLETE_DATA, 0, null, holdTime); //holdTime.getTime());
+					//whatDaq.getReceiveData().receiveData(DAE_SAVE_INCOMPLETE_DATA, 0, null, holdTime); //holdTime.getTime());
+					whatDaq.getReceiveData().receiveStatus(DAE_SAVE_INCOMPLETE_DATA, holdTime, 0);
 				} else {
-					if (whatDaq.getLength() > dbLength
-							&& whatDaq.getLength() == whatDaq.getMaxLength()
-							&& whatDaq.getOffset() == 0) {
+					if (whatDaq.getLength() > dbLength && whatDaq.getLength() == whatDaq.getMaxLength() && whatDaq.getOffset() == 0) {
 						restoreDesiredLengthOffset = true;
 						whatDaq.setLengthOffset(dbLength, dbOffset);
 					}
-					if ((whatDaq.getOffset() < dbOffset)
-							|| (whatDaq.getOffset() > (dbOffset + dbLength))
-							|| ((whatDaq.getOffset() + whatDaq.getLength()) > (dbOffset + dbLength))) { // users
-																										// request
-																										// can't
-																										// be
-																										// satisfied
-																										// with
-																										// saved
-																										// data
+					if ((whatDaq.getOffset() < dbOffset) || (whatDaq.getOffset() > (dbOffset + dbLength)) || ((whatDaq.getOffset() + whatDaq.getLength()) > (dbOffset + dbLength))) { 
+						// users request can't be satisfied with saved data
 						//System.out.println("SavedDataSource.getDataWhereClause, refusal # 2, o: " + whatDaq.getOffset() + ", l: "
 						//		+ whatDaq.getLength() + ", dbo: " + dbOffset
 						//		+ ", dbl: " + dbLength + ", w: " + whatDaq);
+						/*
 						error = SAV_RST_ILLEN;
 						data = null;
+						*/
+						whatDaq.getReceiveData().receiveStatus(SAV_RST_ILLEN, holdTime, 0); //holdTime.getTime());
 					} else if (finalData == null) // no data
-						data = null;
+						//data = null;
+						whatDaq.getReceiveData().receiveStatus(SAV_RST_NODATA, holdTime, 0); //holdTime.getTime());
 					else // copy data
 					{
 						data = new byte[whatDaq.getLength()];
@@ -2098,6 +1363,7 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 						//			.println("SavedDataSource.getDataWhereClause(): calling ending receiveData()\n"
 						//							+ dbFileAlias + ", " + dbCollectionAlias 
 						//							+ ", " + dbSetAlias);
+						whatDaq.getReceiveData().receiveData(data, 0, holdTime, 0); //holdTime.getTime());
 					}
 					//++numGetDataWhereOk;
 					//if (classBugs)
@@ -2105,13 +1371,14 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 					//			.println("SavedDataSource, call receiveData ok "
 					//					+ whatDaq + ", dataLen: " + data.length);
 					//whatDaq.getReceiveData().receiveData(whatDaq, error, 0, data, holdTime.getTime(), holdContext);
-					whatDaq.getReceiveData().receiveData(error, 0, data, holdTime); //holdTime.getTime());
+					//whatDaq.getReceiveData().receiveData(error, 0, data, holdTime); //holdTime.getTime());
 				}
 			}
-		} catch (Exception ex) {
-			error = DAE_SAVE_GET_EXCEPTION;
+		} catch (Exception e) {
+			//error = DAE_SAVE_GET_EXCEPTION;
 			//whatDaq.getReceiveData().receiveData(whatDaq, error, 0, data, holdTime.getTime(), holdContext);
-			whatDaq.getReceiveData().receiveData(error, 0, data, holdTime); //holdTime.getTime());
+			//whatDaq.getReceiveData().receiveData(error, 0, data, holdTime); //holdTime.getTime());
+			whatDaq.getReceiveData().receiveStatus(DAE_SAVE_GET_EXCEPTION, holdTime, 0); //holdTime.getTime());
 		}
 	}
 
@@ -2770,111 +2037,4 @@ public class SavedDataSource implements DaqPoolUserRequests<WhatDaq>, DbServer.C
 			this.snapError = snapError;
 		}
 	}
-
-	/**
-	 * Return a statistics report.
-	 * 
-	 * @return a statistics report
-	 */
-	 /*
-	public static String reportStatistics() {
-		//++numReportStatistics;
-		StringBuffer returnBuffer = new StringBuffer();
-		returnBuffer.append("\nSavedDataSource:");
-		if (numSleepWriteQueue != 0)
-			returnBuffer.append("\n\tnumSleepWriteQueue: "
-					+ numSleepWriteQueue);
-		if (numGetData != 0)
-			returnBuffer.append("\n\tnumGetData: " + numGetData);
-		if (numGetDataWhereClause != 0)
-			returnBuffer.append("\n\tnumGetDataWhereClause: "
-					+ numGetDataWhereClause);
-		if (numGetDataWhereResult != 0)
-			returnBuffer.append("\n\tnumGetDataWhereResult: "
-					+ numGetDataWhereResult);
-		if (numGetDataWhereIncomplete != 0)
-			returnBuffer.append("\n\tnumGetDataWhereIncomplete: "
-					+ numGetDataWhereIncomplete);
-		if (numGetDataWhereBadLength != 0)
-			returnBuffer.append("\n\tnumGetDataWhereBadLength: "
-					+ numGetDataWhereBadLength);
-		if (lastGetDataWhereBadLength != null)
-			returnBuffer.append("\n\tlastGetDataWhereBadLength: "
-					+ lastGetDataWhereBadLength);
-		if (numGetDataWhereSleep != 0)
-			returnBuffer.append("\n\tnumGetDataWhereSleep: "
-					+ numGetDataWhereSleep);
-		if (numGetDataWhereOk != 0)
-			returnBuffer
-					.append("\n\tnumGetDataWhereOk: " + numGetDataWhereOk);
-		if (numGetDataWhereException != 0)
-			returnBuffer.append("\n\tnumGetDataWhereException: "
-					+ numGetDataWhereException);
-		if (lastPadDataException != null)
-			returnBuffer.append("\n\tlastPadDataException: "
-					+ lastPadDataException);
-		if (lastGetDataWhereArrayCopyException != null)
-			returnBuffer.append("\n\tlastGetDataWhereArrayCopyException: "
-					+ lastGetDataWhereArrayCopyException);
-		if (numPadDataException != 0)
-			returnBuffer.append("\n\tnumPadDataException: "
-					+ numPadDataException);
-		if (numGetDataWhereArrayCopyException != 0)
-			returnBuffer.append("\n\tnumGetDataWhereArrayCopyException: "
-					+ numGetDataWhereArrayCopyException);
-		if (numAliasToIndexException != 0) returnBuffer.append("\n\tnumAliasToIndexException: " + numAliasToIndexException);
-		if (numCancelUserRequestException != 0) returnBuffer.append("\n\tnumCancelUserRequestException: " + numCancelUserRequestException);
-		if (numDeleteFileException != 0) returnBuffer.append("\n\tnumDeleteFileException: " + numDeleteFileException);
-		if (numGetDataException != 0) returnBuffer.append("\n\tnumGetDataException: " + numGetDataException);
-		if (numGetFTPDataBlobsException != 0) returnBuffer.append("\n\tnumGetFTPDataBlobsException: " + numGetFTPDataBlobsException);
-		if (numGetFTPHeaderException != 0) returnBuffer.append("\n\tnumGetFTPHeaderException: " + numGetFTPHeaderException);
-		if (numGetHeaderException != 0) returnBuffer.append("\n\tnumGetHeaderException: " + numGetHeaderException);
-		if (numGetSnapDataBlobsException != 0) returnBuffer.append("\n\tnumGetSnapDataBlobsException: " + numGetSnapDataBlobsException);
-		if (numGetSnapDataException != 0) returnBuffer.append("\n\tnumGetSnapDataException: " + numGetSnapDataException);
-		if (numGetSnapHeaderException != 0) returnBuffer.append("\n\tnumGetSnapHeaderException: " + numGetSnapHeaderException);
-		if (numNoSkipWhereNotEncompassing != 0) returnBuffer.append("\n\tnumNoSkipWhereNotEncompassing: " + numNoSkipWhereNotEncompassing);
-		if (numSkipWhereNotEncompassing != 0) returnBuffer.append("\n\tnumSkipWhereNotEncompassing: " + numSkipWhereNotEncompassing);
-		// if ( != 0) returnBuffer.append("\n\t: " + );	    
-		//if (lastClearedStatistics != null) returnBuffer.append("\n\tlastClearedStatistics: " + lastClearedStatistics);
-		if (numReportStatistics != 0)
-			returnBuffer.append("\n\tnumReportStatistics: "
-					+ numReportStatistics);
-		returnBuffer.append("\n");
-		return returnBuffer.toString();
-	}
-	*/
-	
-	/**
-	 * clear statistics.
-	 */
-	 /*
-	public static void clearStatistics() {
-		numSleepWriteQueue = 0;
-		numGetData = 0;
-		numGetDataWhereClause = 0;
-		numGetDataWhereResult = 0;
-		numGetDataWhereIncomplete = 0;
-		numGetDataWhereBadLength = 0;
-		lastGetDataWhereBadLength = null;
-		numGetDataWhereSleep = 0;
-		numGetDataWhereOk = 0;
-		numGetDataWhereException = 0;
-		lastPadDataException = null;
-		lastGetDataWhereArrayCopyException = null;
-		numPadDataException = 0;
-		numGetDataWhereArrayCopyException = 0;
-		numAliasToIndexException = 0;
-		numCancelUserRequestException = 0;
-		numDeleteFileException = 0;
-		numGetDataException = 0;
-		numGetFTPDataBlobsException = 0;
-		numGetFTPHeaderException = 0;
-		numGetHeaderException = 0;
-		numGetSnapDataBlobsException = 0;
-		numGetSnapDataException = 0;
-		numGetSnapHeaderException = 0;
-		numSkipWhereNotEncompassing = 0;
-		numNoSkipWhereNotEncompassing = 0;
-	}
-	*/
 }

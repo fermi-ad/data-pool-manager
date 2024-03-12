@@ -1,4 +1,4 @@
-// $Id: ReadSetScalingExt.java,v 1.3 2023/11/02 16:36:16 kingc Exp $
+// $Id: ReadSetScalingExt.java,v 1.5 2024/02/22 16:33:36 kingc Exp $
 package gov.fnal.controls.servers.dpm.scaling;
 
 import java.util.Date;
@@ -8,19 +8,20 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.nio.ByteBuffer;
 
-import gov.fnal.controls.service.proto.Lookup_v2;
+import gov.fnal.controls.servers.dpm.pools.DeviceInfo;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
-import gov.fnal.controls.servers.dpm.pools.acnet.Lookup;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
+
+import gov.fnal.controls.servers.dpm.pools.DeviceCache;
 import gov.fnal.controls.servers.dpm.Errors;
-import gov.fnal.controls.servers.dpm.pools.Node;
 import gov.fnal.controls.servers.dpm.events.ClockEvent;
 
 class ReadSetScalingExt extends ReadSetScaling
 {
-	ReadSetScalingExt(int di, int pi, Lookup_v2.ReadSetScaling scaling)
+	ReadSetScalingExt(DeviceInfo.ReadSetScaling scaling)
 	{
-		super(di, pi, scaling);
+		super(scaling);
 	}
 
 	String rawToString(byte[] data, int offset, int length) throws AcnetStatusException 
@@ -32,7 +33,7 @@ class ReadSetScalingExt extends ReadSetScaling
 	{
 		final int raw = raw(data, length);
 
-		switch ((int) constants[2]) {
+		switch ((int) scaling.common.constants[2]) {
 			case 0:
 				return raw;
 
@@ -47,11 +48,33 @@ class ReadSetScalingExt extends ReadSetScaling
 		}
 	}
 
+	private String getEnumString(int value) throws AcnetStatusException
+	{
+		final DeviceInfo.ReadSetScaling.Common.EnumString es = scaling.common.enums.get(value);
+
+		if (es != null)
+			return es.shortText;
+
+		throw new AcnetStatusException(DIO_NOSCALE);
+	}
+
+	private int getEnumSetting(String value) throws AcnetStatusException
+	{
+		final DeviceInfo.ReadSetScaling.Common.EnumString es = scaling.common.enums.get(value);
+
+		if (es != null)
+			return es.value;
+
+		throw new AcnetStatusException(DIO_NOSCALE);
+	}
+
 	String rawToString(ByteBuffer data, int length) throws AcnetStatusException 
 	{
-		if (cIndex == 84) {
+		final double[] constants = scaling.common.constants;
+
+		if (scaling.common.index == 84) {
 			if ((int) constants[0] == 472 && length > 1 && constants[4] != 0.0) {
-				final int seconds = (int) ((constants[3] * rawToPrimary(raw(data, length)) / constants[4]) + constants[5] * 3600 + 0.5);
+				final int seconds = (int) ((constants[3] * primary.scale(raw(data, length)) / constants[4]) + constants[5] * 3600 + 0.5);
 
 				return String.format("%02:%02:%02", seconds / 3600, (seconds % 3600) / 60, seconds % 60); 
 			}
@@ -105,17 +128,20 @@ class ReadSetScalingExt extends ReadSetScaling
 			case 12: // CNV_ENUMERATED
 				if (length < 4) //4 = long size in bytes for the value
 					throw new AcnetStatusException(DIO_SCALEFAIL, "Alternate Scaling Failed c0=12,length < 4");
-				return EnumeratedStrings.getEnumeratedString(di, pi, rawReading(data, length));
+				//return EnumeratedStrings.getEnumeratedString(di, pi, rawReading(data, length));
+				return getEnumString(rawReading(data, length));
 
 			case 288: // CNV_BYTE_ENUMERATED
 				if (length != 1) //1 = size in bytes for the value
 					throw new AcnetStatusException(DIO_SCALEFAIL, "Alternate Scaling Failed c0=12,length != 1");
-				return EnumeratedStrings.getEnumeratedString(di, pi, rawReading(data, length));
+				return getEnumString(rawReading(data, length));
+				//return EnumeratedStrings.getEnumeratedString(di, pi, rawReading(data, length));
 
 			case 289: // CNV_SHORT_ENUMERATED
 				if (length != 2) //2 = size in bytes for the value
 					throw new AcnetStatusException(DIO_SCALEFAIL, "Alternate Scaling Failed c0=12,length != 2");
-				return EnumeratedStrings.getEnumeratedString(di, pi, rawReading(data, length));
+				return getEnumString(rawReading(data, length));
+				//return EnumeratedStrings.getEnumeratedString(di, pi, rawReading(data, length));
 
 			case 347: // CNV_IP_ADDRESS
 				{
@@ -159,7 +185,8 @@ class ReadSetScalingExt extends ReadSetScaling
 					throw new AcnetStatusException(DIO_SCALEFAIL, "Alternate Scaling Failed c0=17,length < 4");
 
 				try {
-					return Lookup.getDeviceInfo(rawReading(data, length)).name;
+					//return Lookup.getDeviceInfo(rawReading(data, length)).name;
+					return DeviceCache.name(rawReading(data, length));
 				} catch (Exception ignore) { }
 
 				return "";
@@ -242,16 +269,16 @@ class ReadSetScalingExt extends ReadSetScaling
 		int il_start = 0, il_end = 0;
 		int ip_address_byte_length = 4;
 
-		if (cIndex == 84) {
+		if (scaling.common.index == 84) {
 			b_y_t_e_s = unscale_2 ( str );
 			return (b_y_t_e_s);
 		}
 		// check transforms if appropriate throw new AcnetStatusException(DIO_SCALEFAIL, "Alternate UnScaling Failed")
-		if (cIndex != 60)
+		if (scaling.common.index != 60)
 			//throw new AcnetStatusException(DIO_SCALEFAIL, "Alternate UnScaling Failed");
 			throw new AcnetStatusException(DIO_SCALEFAIL);
 
-		int c0 = (int) constants[0];
+		int c0 = (int) scaling.common.constants[0];
 
 		switch (c0) {
 		case 2: // CNV_SHORT_HEX
@@ -291,17 +318,20 @@ class ReadSetScalingExt extends ReadSetScaling
 			break;
 
 		case 12: // CNV_ENUMERATED
-			v = EnumeratedStrings.getEnumeratedSetting(di, pi, str);
+			//v = EnumeratedStrings.getEnumeratedSetting(di, pi, str);
+			v = getEnumSetting(str);
 			b_y_t_e_s = raw(v, 4);
 			break;
 
 		case 288: // CNV_BYTE_ENUMERATED
-			v = EnumeratedStrings.getEnumeratedSetting(di, pi, str);
+			//v = EnumeratedStrings.getEnumeratedSetting(di, pi, str);
+			v = getEnumSetting(str);
 			b_y_t_e_s = raw(v, 1);
 			break;
 
 		case 289: // CNV_SHORT_ENUMERATED
-			v = EnumeratedStrings.getEnumeratedSetting(di, pi, str);
+			//v = EnumeratedStrings.getEnumeratedSetting(di, pi, str);
+			v = getEnumSetting(str);
 			b_y_t_e_s = raw(v, 2);
 			break;
 
@@ -341,9 +371,10 @@ class ReadSetScalingExt extends ReadSetScaling
 
 		case 17: // CNV_DEVICE
 			try {
-				final Lookup.DeviceInfo dInfo = Lookup.getDeviceInfo(str);
+				//final Lookup.DeviceInfo dInfo = Lookup.getDeviceInfo(str);
 
-				b_y_t_e_s = raw(dInfo.di, 4);
+				//b_y_t_e_s = raw(dInfo.di, 4);
+				b_y_t_e_s = raw(DeviceCache.di(str), 4);
 			} catch (Exception e) {
 			}
 			//DeviceNameIndex dni = new DeviceNameIndex(str);
@@ -443,6 +474,8 @@ class ReadSetScalingExt extends ReadSetScaling
 
 	private byte[] unscale_2(String str) throws AcnetStatusException 
 	{
+		final double[] constants = scaling.common.constants;
+
 		switch ((int) constants[0]) {
 			case 472: // special conversion
 				// dd-mmm-yyyy hh:mm:ss GMT(?) to clinks
@@ -460,7 +493,7 @@ class ReadSetScalingExt extends ReadSetScaling
 				if (constants[3] == 0.0)
 					throw new AcnetStatusException(DIO_SCALEFAIL);
 
-				final int rawData = primaryToRaw((flt_hours - constants[5]) * constants[4] / constants[3]);	/* convert to raw data */
+				final int rawData = primary.unscale((flt_hours - constants[5]) * constants[4] / constants[3]);	/* convert to raw data */
 
 				return raw(rawData, 2);
 		}

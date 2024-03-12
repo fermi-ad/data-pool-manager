@@ -1,4 +1,4 @@
-// $Id: OnceImmediateEvent.java,v 1.3 2023/09/26 20:52:04 kingc Exp $
+// $Id: OnceImmediateEvent.java,v 1.4 2024/01/10 20:57:18 kingc Exp $
 package gov.fnal.controls.servers.dpm.events;
 
 public class OnceImmediateEvent implements DataEvent
@@ -40,5 +40,8 @@ public class OnceImmediateEvent implements DataEvent
 	{
 	}
 
-	public void deleteObserver(DataEventObserver observer) { }
+	@Override
+	public void deleteObserver(DataEventObserver observer)
+	{
+	}
 }

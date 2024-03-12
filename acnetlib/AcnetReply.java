@@ -1,4 +1,4 @@
-// $Id: AcnetReply.java,v 1.2 2023/12/13 17:04:49 kingc Exp $
+// $Id: AcnetReply.java,v 1.3 2024/02/22 16:29:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 public class AcnetReply extends AcnetPacket implements AcnetConstants, AcnetErrors
@@ -27,12 +27,12 @@ public class AcnetReply extends AcnetPacket implements AcnetConstants, AcnetErro
 	}
 
 	//AcnetReply(AcnetConnection connection, int status, RequestId requestId, int server) 
-	AcnetReply(int status, RequestId requestId, int server) 
+	AcnetReply(int status, RequestId requestId, int server, boolean last) 
 	{
 		super(ACNET_FLG_RPY, status, server, 0, 0, 0, 0, ACNET_HEADER_SIZE, null);
 
 		this.requestId = requestId;
-		this.last = true;
+		this.last = last;
 	}
 
 	@Override

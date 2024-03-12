@@ -1,10 +1,10 @@
-//  $Id: Range.java,v 1.1 2023/10/04 19:38:05 kingc Exp $
+//  $Id: Range.java,v 1.2 2024/03/05 17:19:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.drf3;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class Range
+public abstract class Range implements Comparable<Range>
 { 
     public static final int MAXIMUM = Integer.MIN_VALUE;
 
@@ -116,4 +116,10 @@ public abstract class Range
      * @return The length or <code>MAXIMUM</code>.
      */
     public abstract int getLength();
+
+	@Override
+	public int compareTo(Range r)
+	{
+		return toString().compareTo(r.toString());
+	}
 }

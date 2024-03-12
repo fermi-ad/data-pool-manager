@@ -1,14 +1,12 @@
-// $Id: AcnetCancel.java,v 1.2 2023/12/13 17:04:49 kingc Exp $
+// $Id: AcnetCancel.java,v 1.3 2024/02/22 16:29:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.util.logging.Level;
-import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
 public class AcnetCancel extends AcnetPacket
 {
 	final ReplyId replyId;
 
-	//AcnetCancel(AcnetConnection c, Buffer buf)
 	AcnetCancel(Buffer buf)
 	{
 		super(buf);
@@ -38,8 +36,6 @@ public class AcnetCancel extends AcnetPacket
 	@Override
 	void handle(AcnetConnection connection)
 	{
-		//System.out.println("RECEIVED A CANCEL " + replyId);
-
 		final AcnetRequest request;
 		
 		synchronized (connection.requestsIn) {
@@ -50,7 +46,7 @@ public class AcnetCancel extends AcnetPacket
 		try {
 			connection.requestHandler.handle(this);
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "ACNET cancel callback exception for connection '" + connection.connectedName() + "'", e);
+			AcnetInterface.logger.log(Level.WARNING, "ACNET cancel callback exception for connection '" + connection.connectedName() + "'", e);
 		} finally {
 			data = null;
 			buf.free();

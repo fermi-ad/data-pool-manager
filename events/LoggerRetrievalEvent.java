@@ -1,4 +1,4 @@
-// $Id: LoggerRetrievalEvent.java,v 1.4 2023/12/13 17:04:49 kingc Exp $
+// $Id: LoggerRetrievalEvent.java,v 1.5 2024/01/10 20:57:18 kingc Exp $
 package gov.fnal.controls.servers.dpm.events;
 
 public class LoggerRetrievalEvent extends DeltaTimeEvent
@@ -157,6 +157,7 @@ public class LoggerRetrievalEvent extends DeltaTimeEvent
 	 * 
 	 * @return a description of this event
 	 */
+	@Override
 	public String toString()
 	{
 		return super.toString() + ", align: " + alignDates + ", minDeltaSecs: "

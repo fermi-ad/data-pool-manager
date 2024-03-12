@@ -1,14 +1,16 @@
-// $Id: JobInfo.java,v 1.14 2023/11/02 16:36:15 kingc Exp $
+// $Id: JobInfo.java,v 1.17 2024/03/06 15:41:27 kingc Exp $
 package gov.fnal.controls.servers.dpm;
 
 import java.util.Map;
 import java.util.Collection;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.sql.SQLException;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
 
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
+import gov.fnal.controls.servers.dpm.pools.DeviceCache;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
@@ -29,14 +31,18 @@ public class JobInfo
 		this.model = model;
 	}
 
-	void addRequest(long refId, DPMRequest req)
+	boolean addRequest(long refId, DPMRequest req)
 	{
 		final DPMRequest old = requests.get(refId);
 
 		if (!req.equals(old)) {
 			requests.put(refId, req);
 			needsStart = true;
+
+			return true;
 		}
+
+		return false;
 	}
 
 	void setModel(JobModel newModel)
@@ -66,13 +72,15 @@ public class JobInfo
 		}
 	}
 
-	//void start(Model model, DPMList list) throws InterruptedException, IOException, AcnetStatusException
-	void start(DPMList list) throws InterruptedException, IOException, AcnetStatusException
+	void start(DPMList list) throws InterruptedException, IOException, AcnetStatusException, SQLException
 	{
+		DeviceCache.add(requests.values());
+		
 		if (needsStart) {
 			needsStart = false;
 
 			final Job newJob = model.createJob(list);
+
 			newJob.start(requests);
 			job.stop();
 			job = newJob;

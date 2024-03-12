@@ -1,10 +1,11 @@
-// $Id: MaxReplySizeOverride.java,v 1.2 2023/09/21 20:02:43 kingc Exp $
+// $Id: MaxReplySizeOverride.java,v 1.3 2024/01/10 20:53:50 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.TimerTask;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
@@ -13,43 +14,23 @@ import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 // Read a text file of maximum reply size overrides for front-ends.  This should
 // just be a temporary fix until the large ACNET message code is removed from MOOC.
 
-class MaxReplySizeOverride
+class MaxReplySizeOverride extends TimerTask
 {
+	private static final long updateRate = 10 * 60 * 1000;
 	private static final HashMap<String, Integer> overrides = new HashMap<>();
 	private static final HashSet<String> announcedOverride = new HashSet<>();
 
 	static {
-		read();
-
-		(new Thread("ReplyOverrideReader") {
-			private final long readInterval = 10 * 60 * 1000L;
-			private long lastReadTime = System.currentTimeMillis();
-
-			public void run()
-			{
-				while (true) {
-					sleepTilNextRead();
-					read();
-				}
-			}
-
-			void sleepTilNextRead()
-			{
-				long timeSleeping = 0;
-
-				while (timeSleeping < readInterval) {
-					try {
-						sleep(readInterval - timeSleeping);
-					} catch (InterruptedException ignore) {
-					}
-
-					timeSleeping = System.currentTimeMillis() - lastReadTime;
-				}
-			}
-		}).start();
+		AcnetPoolImpl.sharedTimer.scheduleAtFixedRate(new MaxReplySizeOverride(), updateRate, updateRate);
 	}
 
-	synchronized private static void read()
+	private MaxReplySizeOverride()
+	{
+		run();
+	}
+
+	@Override
+	synchronized public void run()
 	{
 		try {
 			final String fileName = "/export/engines/files/MaxReplySizeOverrides.txt";
@@ -70,8 +51,7 @@ class MaxReplySizeOverride
 			}
 
 			in.close();
-		} catch (Exception ignore) {
-		}
+		} catch (Exception ignore) { }
 	}
 
 	synchronized static int get(String nodeName, int defaultValue)
@@ -97,9 +77,8 @@ class MaxReplySizeOverride
 
 		while (true) {
 			for (String node : nodes)
-				System.out.println(node + " = " + get(node, 8888));
-		
-			Thread.sleep(10000);
+				System.out.printf("%-8s = %d\n", node, get(node, 1234));
+			Thread.sleep(2000);
 		}
 	}
 }

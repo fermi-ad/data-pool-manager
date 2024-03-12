@@ -1,4 +1,4 @@
-// $Id: DataEventFactory.java,v 1.4 2023/09/26 20:52:04 kingc Exp $
+// $Id: DataEventFactory.java,v 1.5 2024/01/10 20:57:18 kingc Exp $
 package gov.fnal.controls.servers.dpm.events;
 
 import java.text.ParseException;
@@ -46,7 +46,8 @@ public final class DataEventFactory
 			final long before = Long.parseLong(st.nextToken());
 			final long after = Long.parseLong(st.nextToken());
 
-			return new AbsoluteTimeEvent(t1, before, after);
+			//return new AbsoluteTimeEvent(t1, before, after);
+			return new AbsoluteTimeEvent(t1);
 		}
 
         case 'c':

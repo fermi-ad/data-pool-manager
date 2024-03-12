@@ -1,35 +1,36 @@
-// $Id: StateEvent.java,v 1.4 2023/12/13 21:08:42 kingc Exp $
+// $Id: StateEvent.java,v 1.5 2024/01/05 21:32:13 kingc Exp $
 package gov.fnal.controls.servers.dpm.events;
 
-import gov.fnal.controls.servers.dpm.pools.acnet.Lookup;
+//import gov.fnal.controls.servers.dpm.pools.acnet.Lookup;
+import gov.fnal.controls.servers.dpm.pools.DeviceCache;
 
 public class StateEvent implements DataEvent
 {
-	public static final byte FLAG_EQUALS = (byte) 1;
+	public static final int FLAG_EQUALS = 1;
+	public static final int FLAG_NOT_EQUALS = 2;
+	public static final int FLAG_ALL_VALUES = 4;
+	public static final int FLAG_GREATER_THAN = 8;
+	public static final int FLAG_LESS_THAN = 16;
 
-	public static final byte FLAG_NOT_EQUALS = (byte) 2;
+	public final String name;
+	public final int di;
+	public final int state;
+	public final long delay;
+	public final int flag;
 
-	public static final byte FLAG_ALL_VALUES = (byte) 4;
-
-	public static final byte FLAG_GREATER_THAN = (byte) 8;
-
-	public static final byte FLAG_LESS_THAN = (byte) 16;
-
-
-	final String name;
-
-	final int di;
-
-	final int state;
-
-	final long delay;
-
-	private final byte flag;
-
-	public StateEvent(int di, int state, long delay, byte flag)
+	public StateEvent(int di, int state, long delay, int flag)
 	{
 		this.di = di;
 		this.name = name(di);
+		this.state = state;
+		this.delay = delay;
+		this.flag = flag;
+	}
+
+	public StateEvent(String name, int state, long delay, int flag)
+	{
+		this.name = name;
+		this.di = di(name);
 		this.state = state;
 		this.delay = delay;
 		this.flag = flag;
@@ -41,39 +42,9 @@ public class StateEvent implements DataEvent
 		return true;
 	}
 
-	/**
-	 * Constructor for StateEvent
-	 * 
-	 * @param deviceName
-	 *            ACNET device index (DI)
-	 * @param state
-	 *            value of 'di'
-	 * @param delay
-	 *            number of milliseconds to delay from this StateEvent before
-	 *            notifying an Observer
-	 * @param flag
-	 *            special notification flag
-	 */
-	public StateEvent(String name, int state, long delay, byte flag)
-	{
-		this.name = name;
-		this.di = di(name);
-		this.state = state;
-		this.delay = delay;
-		this.flag = flag;
-	}
-
-	/**
-	 * Adds a DataEventObserver who is interested in receiving notification when
-	 * this StateEvent occurs.
-	 * 
-	 * @param observer
-	 *            DataEventObserver to add
-	 * @see #deleteObserver(DataEventObserver)
-	 */
-	public void addObserver(DataEventObserver observer)
-	{
-	}
+	//public void addObserver(DataEventObserver observer)
+	//{
+	//}
 
 	/**
 	 * converts a device index to device name
@@ -85,7 +56,7 @@ public class StateEvent implements DataEvent
 	static private String name(int di)
 	{
 		try {
-			return Lookup.getDeviceInfo(di).name;
+			return DeviceCache.name(di);
 		} catch (Exception e) {
 			return "" + di;
 		}
@@ -101,26 +72,17 @@ public class StateEvent implements DataEvent
 	private int di(String name)
 	{
 		try {
-			return Lookup.getDeviceInfo(name).di;
+			//return Lookup.getDeviceInfo(name).di;
+			return DeviceCache.di(name);
 		} catch (Exception e) {
 			return -1;
 		}
 	}
 
-	/**
-	 * Removes a DataEventObserver who was previously registered to receive
-	 * notification when this StateEvent occurred. Note: it is important to use
-	 * the StateEvent (or a copy of the original StateEvent) which was used to
-	 * make the original request.
-	 * 
-	 * @param observer
-	 *            DataEventObserver to remove
-	 * @see #addObserver(DataEventObserver)
-	 */
-	public void deleteObserver(DataEventObserver observer)
-	{
+	//public void deleteObserver(DataEventObserver observer)
+	//{
 		//stateEventDecoder.deleteObserver(observer, this);
-	}
+	//}
 
 	/**
 	 * @return description of string
@@ -137,43 +99,22 @@ public class StateEvent implements DataEvent
 	 * 
 	 * @return device index
 	 */
-	public int deviceIndex()
-	{
-		return di;
-	}
+	//public int deviceIndex()
+	//{
+	//	return di;
+	//}
 
-	/**
-	 * returns the ACNET device name associated with this StateEvent
-	 * 
-	 * @return ACNET device name
-	 */
-	public String deviceName()
-	{
-		return name;
-	}
+	//public String deviceName()
+//	{
+//		return name;
+//	}
 
-	/**
-	 * returns the notification flag associated with this StateEvent
-	 * 
-	 * @return the notification flag associated with this StateEvent
-	 * @see #FLAG_EQUALS
-	 * @see #FLAG_NOT_EQUALS
-	 * @see #FLAG_ALL_VALUES
-	 */
-	public byte flag()
-	{
-		return flag;
-	}
+//	public int flag()
+//	{
+//		return flag;
+//	}
 
-	/**
-	 * returns the time in nanoseconds after the 'timestamp' that this
-	 * StateEvent was created.
-     * @param flag
-	 * 
-	 * @return the time in nanoseconds after timeStamp()
-	 * @see #timeStamp()
-	 */
-	private static String interpretFlag(short flag)
+	private static String interpretFlag(int flag)
 	{
 		switch (flag) {
 		case FLAG_EQUALS:
@@ -193,10 +134,10 @@ public class StateEvent implements DataEvent
 		}
 	}
 
-	public int state()
-	{
-		return state;
-	}
+//	public int state()
+//	{
+//		return state;
+//	}
 
 	@Override
     public String toString()

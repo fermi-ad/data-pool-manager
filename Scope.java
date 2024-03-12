@@ -1,4 +1,4 @@
-// $Id: Scope.java,v 1.50 2023/12/13 17:04:49 kingc Exp $
+// $Id: Scope.java,v 1.60 2024/03/05 17:49:54 kingc Exp $
 package gov.fnal.controls.servers.dpm;
 
 import java.util.Set;
@@ -162,12 +162,12 @@ public class Scope implements AcnetMessageHandler, AcnetRequestHandler, DPMScope
 		this.repliesPerSecondMax = 0;
 		this.connection = connection;
 		this.connection.handleRequests(this);
-		connection.handleMessages(this);
+		this.connection.handleMessages(this);
 		
 		try {
 			this.discoveryReply.hostName = DPMServer.localHostName();
 			this.scopeServer = new ScopeServer();
-			this.discoveryReply.codeVersion = System.getProperty("dae.version", "");
+			this.discoveryReply.codeVersion = System.getProperty("dae.version", System.getProperty("version", ""));
 			this.discoveryReply.scopePort = scopeServer.serverChannel.socket().getLocalPort();
 		} catch (Exception ignore) {
 			this.discoveryReply.hostName = "-";
@@ -213,6 +213,8 @@ public class Scope implements AcnetMessageHandler, AcnetRequestHandler, DPMScope
 			discoveryReply.activeListCount = lists.size();
 			discoveryReply.totalListCount = listOpenedCount;
 			discoveryReply.requestCount = 0;
+			discoveryReply.totalRequestCount = DPMList.totalRequestCount;
+			discoveryReply.consolidationHits = AcceleratorPool.consolidationHits();
 			discoveryReply.repliesPerSecond = 0;
 			discoveryReply.repliesPerSecondMax = 0;
 			discoveryReply.loadPct = DPMServer.loadPercentage();
@@ -221,6 +223,7 @@ public class Scope implements AcnetMessageHandler, AcnetRequestHandler, DPMScope
 			discoveryReply.heapFreePct = DPMServer.heapFreePercentage();
 			discoveryReply.activeRefresh = RefreshTask.activeCount() > 0;
 			discoveryReply.restartScheduled = DPMServer.restartScheduled();
+			discoveryReply.inDebugMode = DPMServer.debug();
 
 			for (DPMList list : lists) {
 				discoveryReply.requestCount += list.requestCount();
@@ -482,7 +485,8 @@ public class Scope implements AcnetMessageHandler, AcnetRequestHandler, DPMScope
 			m.repliesPerSecond = list.repliesPerSecond;
 			m.repliesPerSecondMax = list.repliesPerSecondMax;
 			m.disposedDate = list.disposedTime;
-			m.requestCount = list.requestCount();
+			//m.requestCount = list.requestCount();
+			m.requestCount = list.whatDaqCount();
 
 			queueReply(m);
 		}
@@ -656,7 +660,9 @@ public class Scope implements AcnetMessageHandler, AcnetRequestHandler, DPMScope
 						}
 					}
 				}
-			} catch (Exception ignore) { }
+			} catch (Exception e) {
+				logger.log(Level.FINE, "exception handling scope channel", e);
+			}
 		}
 
 		public void run()
@@ -664,7 +670,7 @@ public class Scope implements AcnetMessageHandler, AcnetRequestHandler, DPMScope
 			handlers.add(this);
 
 			logger.log(Level.INFO, String.format("Scope thread %s begin - %d active thread(s)", 
-											channel, handlers.size()));
+													channel, handlers.size()));
 
 			// Send over the current state of the DPM 
 
@@ -692,7 +698,7 @@ public class Scope implements AcnetMessageHandler, AcnetRequestHandler, DPMScope
 			} catch (Exception ignore) { }
 
 			logger.log(Level.INFO, String.format("Scope thread %s end - %d active thread(s)", 
-											channel, handlers.size()));
+													channel, handlers.size()));
 		}
 
 		@Override

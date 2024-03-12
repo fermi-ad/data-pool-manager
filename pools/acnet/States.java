@@ -1,4 +1,4 @@
-// $Id: States.java,v 1.3 2023/12/13 17:04:49 kingc Exp $
+// $Id: States.java,v 1.7 2024/03/05 19:21:08 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.HashSet;
@@ -12,9 +12,10 @@ import gov.fnal.controls.servers.dpm.acnetlib.AcnetConnection;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetMessage;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetMessageHandler;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
-import gov.fnal.controls.servers.dpm.pools.Node;
 import gov.fnal.controls.servers.dpm.pools.AcceleratorPool;
+import gov.fnal.controls.servers.dpm.pools.DeviceCache;
 
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
@@ -36,27 +37,48 @@ class States extends Thread implements AcnetMessageHandler
 
 	final AcnetConnection connection;
 	final LinkedBlockingQueue<State> msgQ = new LinkedBlockingQueue<>();
-	final HashSet<Integer> frontEndUp;
+	final int v_feup, v_fesu, v_acnet;
+
+	//final HashSet<Integer> frontEndUp;
 
 	static void init() throws AcnetStatusException
 	{
 		new States(AcnetInterface.open("STATES"));
 	}
 
+	private int di(String name)
+	{
+		try {
+			return DeviceCache.di(name);
+		} catch (Exception ignore) {
+			logger.log(Level.WARNING, "Device name '" + name + "' not found");
+		}
+	
+		return 0;
+	}
+
+/*
 	private void add(HashSet<Integer> set, String name)
 	{
 		try {
-			set.add(Lookup.getDeviceInfo(name).di);
-		} catch (Exception ignore) { }
+			//set.add(Lookup.getDeviceInfo(name).di);
+			set.add(DeviceCache.di(name));
+		} catch (Exception e) {
+		}
 	}
+	*/
 
 	private States(AcnetConnection connection) throws AcnetStatusException
 	{
 		this.connection = connection;
-		this.frontEndUp = new HashSet<>();
+		//this.frontEndUp = new HashSet<>();
 
-		add(frontEndUp, "V:FEUP");
-		add(frontEndUp, "V:FESU");
+		this.v_feup = di("V:FEUP");
+		this.v_fesu = di("V:FESU");
+		this.v_acnet = di("V:ACNET");
+
+		//add(frontEndUp, "V:FEUP");
+		//add(frontEndUp, "V:FESU");
 
 		this.connection.handleMessages(this);
 		setName("States Handler");
@@ -69,11 +91,19 @@ class States extends Thread implements AcnetMessageHandler
 		while (true) {
 			try {
 				final State report = msgQ.take();
+				final int di = report.di;
+				final int state = report.state;
 				
-				if (frontEndUp.contains(report.di)) {
-					logger.info("Node " + connection.getName(report.state) + " is up");
+				if (di == v_feup || di == v_fesu) {
+					logger.log(Level.INFO, "Node " + Node.get(report.state) + " is up");
 					AcceleratorPool.nodeUp(Node.get(report.state));
-				}
+				} else if (di == v_acnet && (state == 1 || state == 2))
+					Node.cacheNodes();
+
+				//if (frontEndUp.contains(report.di)) {
+				//	logger.info("Node " + connection.getName(report.state) + " is up");
+				//	AcceleratorPool.nodeUp(Node.get(report.state));
+				//}
 			} catch (InterruptedException e) {
 				break;
 			} catch (Exception ignore) { }

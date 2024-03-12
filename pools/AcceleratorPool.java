@@ -1,4 +1,4 @@
-// $Id: AcceleratorPool.java,v 1.12 2023/12/13 17:04:49 kingc Exp $
+// $Id: AcceleratorPool.java,v 1.15 2024/03/05 17:26:39 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools;
 
 import java.util.List;
@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
-
-//import gov.fnal.controls.servers.dpm.AcnetNodeInfo;
 
 import gov.fnal.controls.servers.dpm.drf3.Property;
 import gov.fnal.controls.servers.dpm.SettingData;
@@ -21,6 +19,7 @@ import gov.fnal.controls.servers.dpm.pools.database.DatabasePoolImpl;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetConnection;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetInterface;
 
@@ -29,6 +28,7 @@ import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 public class AcceleratorPool
 {
 	private static AcnetConnection connection;
+	volatile static int consolidationHits;
 
 	private final ByteBuffer buf;
 
@@ -37,14 +37,26 @@ public class AcceleratorPool
 
 	public static void init() throws Exception
 	{
-		Node.init();
-		AdditionalDeviceInfo.init();
+		//Node.init();
+		//AdditionalDeviceInfo.init();
+		consolidationHits = 0;
+		DeviceCache.init();
 
 		AcnetPoolImpl.init();
 		EpicsPoolImpl.init();
 		FTPPoolImpl.init();
 
 		connection = AcnetInterface.open("SETSDB");
+	}
+
+	public static void consolidationHit()
+	{
+		consolidationHits++;
+	}
+
+	public static int consolidationHits()
+	{
+		return consolidationHits;
 	}
 
 	private PoolInterface getPool(WhatDaq whatDaq)

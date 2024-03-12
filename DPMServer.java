@@ -1,4 +1,4 @@
-// $Id: DPMServer.java,v 1.84 2023/12/13 17:04:49 kingc Exp $
+// $Id: DPMServer.java,v 1.85 2024/01/09 15:59:34 kingc Exp $
 package gov.fnal.controls.servers.dpm;
 
 import java.util.Timer;
@@ -160,7 +160,7 @@ public class DPMServer implements AcnetErrors
 		@Override
 		public void run()
 		{
-			logger.info("DPM server shutdown");
+			logger.log(Level.INFO, "DPM server shutdown");
 
 			memoryUsageDisplay.cancel();
 
@@ -172,8 +172,6 @@ public class DPMServer implements AcnetErrors
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "shutdown", e);
 			}
-
-			System.out.println("ACNET interface close");
 
 			AcnetInterface.close();
 		}
@@ -189,14 +187,14 @@ public class DPMServer implements AcnetErrors
 		@Override
 		public void run()
 		{
-			logger.fine("Checking for restart");
+			logger.log(Level.FINE, "Checking for restart");
 
 			for (DPMProtocolHandler h : DPMProtocolHandler.allHandlers()) {
 				if (!h.restartable())
 					return;	
 			}
 
-			logger.info("Restarting ...");
+			logger.log(Level.INFO, "Restarting ...");
 			System.exit(100);
 		}
 	}
@@ -348,7 +346,7 @@ public class DPMServer implements AcnetErrors
 		//server = this;
 		//this.pid = getPid();
 
-		logger.config("DPM(" + pid + ") CLASSPATH: " + 
+		logger.log(Level.CONFIG, "DPM(" + pid + ") CLASSPATH: " + 
 						System.getProperty("java.class.path"));
 
 		//AcnetInterface.init(host, vNode);
@@ -385,7 +383,7 @@ public class DPMServer implements AcnetErrors
 			setLogLevel(Level.parse(System.getProperty("loglevel")));
 		} catch (Exception e) {
 			final Level logLevel = debug ? Level.FINE : Level.INFO;
-			logger.config("Logging level defaulted to " + logLevel);
+			logger.log(Level.CONFIG, "Logging level defaulted to " + logLevel);
 			setLogLevel(logLevel);
 		}
 		//if (server == null) {

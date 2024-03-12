@@ -1,12 +1,9 @@
-// $Id: AcnetPacket.java,v 1.2 2023/12/13 17:04:49 kingc Exp $
+// $Id: AcnetPacket.java,v 1.3 2024/02/22 16:29:45 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
-
-import static gov.fnal.controls.servers.dpm.DPMServer.logger;
-import gov.fnal.controls.servers.dpm.pools.Node;
 
 abstract public class AcnetPacket implements AcnetConstants
 {
@@ -168,12 +165,6 @@ abstract public class AcnetPacket implements AcnetConstants
 		return AcnetInterface.localNode().value();
 	}
 
-	//public AcnetConnection getConnection()
-	//{
-	//	return Node;
-	//}
-
-	//static AcnetPacket create(AcnetConnection connection, Buffer buf)
 	static AcnetPacket create(Buffer buf)
 	{
 		final int flags = buf.getUnsignedShort();

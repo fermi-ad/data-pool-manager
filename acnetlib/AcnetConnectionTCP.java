@@ -1,6 +1,4 @@
-// $Id: AcnetConnectionTCP.java,v 1.2 2023/12/13 17:04:49 kingc Exp $
-
-/*
+// $Id: AcnetConnectionTCP.java,v 1.4 2024/03/06 15:38:07 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.util.Iterator;
@@ -8,6 +6,8 @@ import java.util.logging.Level;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
+import java.net.NetworkInterface;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.Selector;
@@ -18,11 +18,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static gov.fnal.controls.servers.dpm.DPMServer.logger;
-
-class AcnetConnectionTCP extends AcnetConnection
+class AcnetConnectionTCP extends AcnetConnectionDaemon
 {
 	enum ReadState { PacketLength, PacketData };
+
+    final static int ACNET_TCP_PORT = 6802;
+	final static String ACSYS_PROXY_HOST = "acsys-proxy.fnal.gov";
 
 	private static final short TCP_CLIENT_PING = 0;
 	private static final short ACNETD_COMMAND = 1;
@@ -52,7 +53,7 @@ class AcnetConnectionTCP extends AcnetConnection
 				setName("AcnetConnectionTCP.SocketThread");
 				start();
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, "unable to create ACNET data thread", e);
+				AcnetInterface.logger.log(Level.SEVERE, "unable to create ACNET data thread", e);
 				throw new RuntimeException("unable to create ACNET data thread");
 			}
 		}
@@ -60,7 +61,7 @@ class AcnetConnectionTCP extends AcnetConnection
 		@Override
 		public void run()
 		{
-			logger.info("Socket thread start");
+			AcnetInterface.logger.info("Socket thread start");
 
 			try {
 				while (true) {
@@ -79,7 +80,7 @@ class AcnetConnectionTCP extends AcnetConnection
 									key.cancel();
 									key.channel().close();
 
-									logger.log(Level.FINER, "ACNET handler exception for connection '" + c.connectedName() + "'", e);
+									AcnetInterface.logger.log(Level.FINER, "ACNET handler exception for connection '" + c.connectedName() + "'", e);
 								}
 							}
 
@@ -97,7 +98,7 @@ class AcnetConnectionTCP extends AcnetConnection
 					}
 				}
 			} catch (IOException e) {
-				logger.log(Level.SEVERE, "socket thread exception", e);
+				AcnetInterface.logger.log(Level.SEVERE, "socket thread exception", e);
 				throw new RuntimeException("socket thread exception", e);
 			}
 		}
@@ -134,8 +135,23 @@ class AcnetConnectionTCP extends AcnetConnection
 	//{
 	//	this(address, name, "");
 	//}
+    static boolean isLocalAddress(InetAddress address)                                                                                                                       
+    {
+        // Check if the address is a valid special local or loop back
 
-    AcnetConnectionTCP(InetSocketAddress address, String name, String vNode)
+        if (address.isAnyLocalAddress() || address.isLoopbackAddress())
+            return true;
+
+        // Check if the address is defined on any interface
+
+        try {
+            return NetworkInterface.getByInetAddress(address) != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    AcnetConnectionTCP(InetSocketAddress address, String name, Node vNode)
 	{
 		super(name, vNode);
 
@@ -145,11 +161,16 @@ class AcnetConnectionTCP extends AcnetConnection
 		try {
 			connect();
 		} catch (AcnetStatusException e) {
-			logger.log(Level.SEVERE, "connect exception", e);
+			AcnetInterface.logger.log(Level.SEVERE, "connect exception", e);
 		}
 
 		connectionMonitor.register(this);
     }
+
+	AcnetConnectionTCP(String host, String name, Node vNode)
+	{
+		this(new InetSocketAddress(host, ACNET_TCP_PORT), name, vNode);
+	}
 
 	@Override
 	boolean inDataHandler()
@@ -174,7 +195,7 @@ class AcnetConnectionTCP extends AcnetConnection
     }
 
 	@Override
-	final public boolean disposed()
+	final boolean disposed()
 	{
 		return channel == null;
 	}
@@ -198,7 +219,7 @@ class AcnetConnectionTCP extends AcnetConnection
 					//try {
 						//handleAcnetPacket(new TCPBuffer(buf));
 					//} catch (Exception e) {
-					//	logger.log(Level.FINE, "exception", e);
+					//	AcnetInterface.logger.log(Level.FINE, "exception", e);
 					//} finally {
 						//BufferCache.release(buf);
 					//}
@@ -265,7 +286,7 @@ class AcnetConnectionTCP extends AcnetConnection
 					try {
 						dataHandler.add(readBuf);
 					} catch (InterruptedException e) {
-						logger.log(Level.FINE, "interrupted", e);
+						AcnetInterface.logger.log(Level.FINE, "interrupted", e);
 					}
 					//BufferCache.release(readBuf);
 					readBuf = null;
@@ -283,7 +304,7 @@ class AcnetConnectionTCP extends AcnetConnection
 	{
 		if (!disposed()) {
 			hdrBuf.clear();
-			hdrBuf.putShort((short) cmd).putInt(this.name).putInt(this.vNode).flip();
+			hdrBuf.putShort((short) cmd).putInt(name).putInt(Rad50.encode(vNode.name())).flip();
 
 			cmdBuf.flip();
 
@@ -361,5 +382,3 @@ class AcnetConnectionTCP extends AcnetConnection
 		channel = null;
 	}
 }
-
-*/

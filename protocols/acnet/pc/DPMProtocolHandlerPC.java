@@ -1,4 +1,4 @@
-// $Id: DPMProtocolHandlerPC.java,v 1.18 2023/12/13 17:04:49 kingc Exp $
+// $Id: DPMProtocolHandlerPC.java,v 1.19 2024/02/22 16:33:36 kingc Exp $
 
 package gov.fnal.controls.servers.dpm.protocols.acnet.pc;
 
@@ -126,7 +126,7 @@ public class DPMProtocolHandlerPC extends DPMProtocolHandlerAcnet implements Acn
 			this.request = request;
 			DPM.Request.unmarshal(request.data()).deliverTo(this);
 		} catch (Exception e) {
-			logger.log(Level.FINE, "", e); 
+			logger.log(Level.FINE, "unmarshal exception", e); 
 		}
 	}
 

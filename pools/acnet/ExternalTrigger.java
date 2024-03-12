@@ -1,4 +1,4 @@
-// $Id: ExternalTrigger.java,v 1.3 2023/11/01 20:56:57 kingc Exp $
+// $Id: ExternalTrigger.java,v 1.5 2024/03/05 17:30:11 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.List;
@@ -10,51 +10,15 @@ import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 import gov.fnal.controls.servers.dpm.events.DataEvent;
 
-/**
- * Describes external triggers for the snapshot functionality of the ACNET fast
- * time plot system.
- * 
- * @author Kevin Cahill
- * @version 0.01<br>
- *          Class created: 20 Jan 1999
- * 
- */
-public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
+class ExternalTrigger implements Trigger, AcnetErrors
 {
-	/**
-	 * @serial trigger device
-	 */
-	private WhatDaq armDevice;
-
-	/**
-	 * @serial trigger mask
-	 */
-	private int armMask;
-
-	/**
-	 * @serial external source arm when true
-	 */
-	private boolean armExternalSource;
-
-	/**
-	 * @serial external source number (0-3)
-	 */
-	private int armSourceModifier;
-
-	/**
-	 * @serial delay from arming events in microseconds
-	 */
-	private int armDelay;
-
-	/**
-	 * @serial device offset
-	 */
-	private int armOffset;
-
-	/**
-	 * @serial device value
-	 */
-	private int armValue;
+	WhatDaq armDevice;
+	int armMask;
+	boolean armExternalSource;
+	int armSourceModifier;
+	int armDelay;
+	int armOffset;
+	int armValue;
 
 	/**
 	 * Constructs an ExternalTrigger object describing the device to serve as
@@ -71,8 +35,8 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @param delay
 	 *            the delay in microseconds or sample periods.
 	 */
-	public ExternalTrigger(WhatDaq device, int deviceOffset, int deviceMask,
-			int deviceValue, int delay) {
+	ExternalTrigger(WhatDaq device, int deviceOffset, int deviceMask, int deviceValue, int delay)
+	{
 		this(device, deviceOffset, deviceMask, deviceValue, delay, false, 0);
 	}
 
@@ -84,7 +48,7 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @param armSourceModifier
 	 *            external source modifier (0-3).
 	 */
-	public ExternalTrigger(int armSourceModifier) {
+	ExternalTrigger(int armSourceModifier) {
 		this(null, 0, 0, 0, 0, true, armSourceModifier);
 	}
 
@@ -97,7 +61,7 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @throws AcnetStatusException
 	 *             if the reconstructionString is invalid
 	 */
-	public ExternalTrigger(String reconstructionString) throws AcnetStatusException {
+	ExternalTrigger(String reconstructionString) throws AcnetStatusException {
 		this(0);
 		StringTokenizer tok = null;
 		String token = null;
@@ -121,7 +85,7 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 			//adi.addDevice(triggerDevice);
 			//armDevice = (WhatDaq) adi.whatDaqs(0, null, null).get(0);
 
-			armDevice = new WhatDaq(triggerDeviceName);
+			armDevice = new WhatDaq(null, triggerDeviceName);
 
 
 			armOffset = armDevice.getOffset();
@@ -189,6 +153,7 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @return true when the external trigger represents the same arming
 	 *         conditions
 	 */
+	@Override
 	public boolean equals(Object arg) {
 		if ((arg != null) && (arg instanceof ExternalTrigger)) {
 			ExternalTrigger compare = (ExternalTrigger) arg;
@@ -218,12 +183,8 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 		return false;
 	}
 
-	/**
-	 * Return the trigger mask.
-	 * 
-	 * @return trigger mask
-	 */
-	public int getArmMask() {
+	int getArmMask()
+	{
 		return armMask;
 	}
 
@@ -232,7 +193,7 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * 
 	 * @return true if it is an external source arm
 	 */
-	public boolean isArmExternalSource() {
+	boolean isArmExternalSource() {
 		return armExternalSource;
 	}
 
@@ -242,18 +203,18 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @return true if arm immediately
 	 * 
 	 */
-	public boolean isArmImmediately() {
-		return false;
-	}
+	//public boolean isArmImmediately() {
+	//	return false;
+	//}
 
-	protected WhatDaq getArmDevice() { return armDevice; }
+	WhatDaq getArmDevice() { return armDevice; }
 
 	/**
 	 * Return external source number (1-3).
 	 * 
 	 * @return external source number (1-3)
 	 */
-	public int getArmSourceModifier() {
+	int getArmSourceModifier() {
 		return armSourceModifier;
 	}
 
@@ -262,16 +223,18 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * 
 	 * @return delay from arming events in microseconds
 	 */
-	public int getArmDelay() {
-		return armDelay;
-	}
+	//@Override
+	//public int getArmingDelay()
+	//{
+	//	return armDelay;
+	//}
 
 	/**
 	 * Return device offset.
 	 * 
 	 * @return device offset
 	 */
-	public int getArmOffset() {
+	int getArmOffset() {
 		return armOffset;
 	}
 
@@ -280,7 +243,7 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * 
 	 * @return device value
 	 */
-	public int getArmValue() {
+	int getArmValue() {
 		return armValue;
 	}
 
@@ -290,15 +253,15 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @return a clone of an ExternalTrigger
 	 * 
 	 */
-	public Object clone() {
-		try {
-			return super.clone();
-		} catch (CloneNotSupportedException e) {
-			System.out.println("Cannot clone ExternalTrigger" + e);
-		}
-		;
-		return null;
-	}
+	//public Object clone() {
+	//	try {
+	//		return super.clone();
+	//	} catch (CloneNotSupportedException e) {
+	//		System.out.println("Cannot clone ExternalTrigger" + e);
+	//	}
+	//	;
+	//	return null;
+	//}
 
 	/**
 	 * Return the arming events.
@@ -306,7 +269,9 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @return the arming events
 	 * 
 	 */
-	public List<DataEvent> getArmingEvents() {
+	@Override
+	public List<DataEvent> getArmingEvents()
+	{
 		return null;
 	}
 
@@ -316,20 +281,13 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * @return a string representing this ExternalTrigger
 	 * 
 	 */
-	public String toString() {
+	@Override
+	public String toString()
+	{
 		StringBuffer returnString = new StringBuffer();
 		if (armExternalSource)
 			returnString.append("x,mod=" + armSourceModifier);
 		else {
-		/*
-			String triggerName = DataLoggerDisposition.getLoggedName(armDevice
-					.getDeviceName(), armDevice.getPropertyIndex(), armDevice
-					.getArrayElement());
-			returnString.append("d," + triggerName + ",mask="
-					+ Integer.toHexString(getArmMask()) + ",val="
-					+ Integer.toHexString(getArmValue()) + ",dly="
-					+ getArmDelay()/1000);
-		*/
 		}
 		return returnString.toString();
 	}
@@ -339,7 +297,7 @@ public class ExternalTrigger implements Trigger, Cloneable, AcnetErrors
 	 * 
 	 * @return String for reconstructing this ExternalTrigger
 	 */
-	public String getReconstructionString() {
-		return "trig=" + toString();
-	}
+	//public String getReconstructionString() {
+	//	return "trig=" + toString();
+	//}
 } // end ExternalTrigger class

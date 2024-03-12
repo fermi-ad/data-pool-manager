@@ -1,4 +1,4 @@
-// $Id: SnapRequest.java,v 1.5 2023/11/02 17:01:49 kingc Exp $
+// $Id: SnapRequest.java,v 1.6 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.List;
@@ -155,8 +155,8 @@ class SnapRequest
 		req.callback = this.callback;
 	}
 
-    String getReconstructionString()
-    {
-		return "";
-    }
+    //String getReconstructionString()
+    //{
+	//	return "";
+    //}
 }

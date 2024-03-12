@@ -1,4 +1,4 @@
-// $Id: DPMRequest.java,v 1.6 2023/10/04 19:40:29 kingc Exp $
+// $Id: DPMRequest.java,v 1.7 2024/03/05 17:46:51 kingc Exp $
 package gov.fnal.controls.servers.dpm;
  
 import java.util.Objects;
@@ -6,7 +6,7 @@ import java.util.Objects;
 import gov.fnal.controls.servers.dpm.drf3.DiscreteRequest;
 import gov.fnal.controls.servers.dpm.drf3.ImmediateEvent;
 		
-public final class DPMRequest extends DiscreteRequest
+public final class DPMRequest extends DiscreteRequest implements Comparable<DPMRequest>
 {
 	private final Model model;
 
@@ -44,6 +44,25 @@ public final class DPMRequest extends DiscreteRequest
 	public int hashCode()
 	{
 	    return Objects.hash(deviceUC, fields[0], fields[1], range, event, model);
+	}
+
+	@Override
+	public int compareTo(DPMRequest req)
+	{
+		int c;
+
+		if ((c = deviceUC.compareTo(req.deviceUC)) == 0) {
+			if ((c = fields[0].compareTo(req.fields[0])) == 0) {
+				if ((c = fields[1].compareTo(req.fields[1])) == 0) {
+					if ((c = range.compareTo(req.range)) == 0) {
+						if ((c = event.compareTo(req.event)) == 0)
+							c = model.compareTo(req.model);
+					}
+				}
+			}
+		}
+
+		return c;
 	}
 
 	public static void main(String[] args)

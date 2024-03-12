@@ -1,4 +1,4 @@
-// $Id: PVAPool.java,v 1.6 2023/11/02 16:36:15 kingc Exp $
+// $Id: PVAPool.java,v 1.7 2024/03/05 17:42:33 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.epics;
 
 import java.util.Set;
@@ -12,8 +12,10 @@ import java.util.logging.Level;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
-import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.DPMServer;
+import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
+import gov.fnal.controls.servers.dpm.pools.AcceleratorPool;
+
 import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
 import org.epics.pva.data.PVAInt;
@@ -303,7 +305,8 @@ public class PVAPool extends TimerTask
 				channelListeners.add(monitor);
 				monitors.put(request, monitor);
 				monitor.start();
-			}
+			} else
+				AcceleratorPool.consolidationHit();
 
 			monitor.addListener(listener);
 

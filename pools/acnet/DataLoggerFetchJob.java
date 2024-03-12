@@ -1,17 +1,11 @@
-// $Id: DataLoggerFetchJob.java,v 1.10 2023/12/13 17:04:49 kingc Exp $
+// $Id: DataLoggerFetchJob.java,v 1.12 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.TimerTask;
 
-import gov.fnal.controls.servers.dpm.TimeNow;
-import gov.fnal.controls.servers.dpm.pools.Node;
-import gov.fnal.controls.servers.dpm.pools.PoolUser;
-import gov.fnal.controls.servers.dpm.pools.ReceiveData;
-import gov.fnal.controls.servers.dpm.pools.LoggerRequest;
-import gov.fnal.controls.servers.dpm.pools.LoggerEvent;
-
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetInterface;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
@@ -20,10 +14,15 @@ import gov.fnal.controls.servers.dpm.acnetlib.AcnetRequestContext;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetReply;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetReplyHandler;
 
+import gov.fnal.controls.servers.dpm.TimeNow;
+import gov.fnal.controls.servers.dpm.pools.PoolUser;
+import gov.fnal.controls.servers.dpm.pools.ReceiveData;
+import gov.fnal.controls.servers.dpm.pools.LoggerRequest;
+import gov.fnal.controls.servers.dpm.pools.LoggerEvent;
 
 public class DataLoggerFetchJob extends TimerTask implements AcnetReplyHandler, AcnetErrors, TimeNow
 {
-	private static final AcnetConnection acnetConnection = AcnetInterface.open("LOGGET").queueReplies(true);
+	private static final AcnetConnection acnetConnection = AcnetInterface.open("LOGGET").setQueueReplies();
 
 	final static short RETURN_TYPECODE = 17;
 	final static int FETCH_POINT_COUNT = 487;
@@ -150,7 +149,7 @@ public class DataLoggerFetchJob extends TimerTask implements AcnetReplyHandler, 
 	{
 		if (!cancelled) {
 			try {
-				final ByteBuffer buf = r.data();
+				final ByteBuffer buf = r.data().order(ByteOrder.LITTLE_ENDIAN);
 				int status = r.status();
 
 				if (status == 0)

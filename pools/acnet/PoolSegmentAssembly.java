@@ -1,4 +1,4 @@
-// $Id: PoolSegmentAssembly.java,v 1.3 2023/10/04 19:40:29 kingc Exp $
+// $Id: PoolSegmentAssembly.java,v 1.5 2024/01/22 22:00:21 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.BitSet;
@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 import gov.fnal.controls.servers.dpm.pools.ReceiveData;
 
-class PoolSegmentAssembly implements ReceiveData
+class PoolSegmentAssembly
 {
 	class ReceiveSegment implements ReceiveData
 	{
@@ -22,12 +22,31 @@ class PoolSegmentAssembly implements ReceiveData
 		@Override
 		public void receiveData(ByteBuffer segment, long timestamp, long cycle)
 		{
+			if (whatDaq.isMarkedForDelete())
+				return;
+			//System.arraycopy(segment, offset, data, whatDaq.offset(), whatDaq.length());
+			segment.get(data, 0, whatDaq.length());
+
+			segmentsReceived.set(whatDaq.id());
+
+			if (segmentsReceived.cardinality() == segments.size()) {
+				segmentsReceived.clear();
+				bigWhatDaq.getReceiveData().receiveData(data, 0, timestamp, cycle);
+				bigWhatDaq.setError(0);
+			}
 		}
 
 		@Override
-		public void receiveData(int error, int offset, byte[] segment, long timestamp)
+		public void receiveStatus(int status, long timestamp, long cycle)
 		{
-			if (whatDaq.isMarkedForDelete() || receiveError(error))
+			receiveError(status);
+		}
+
+		@Override
+		//public void receiveData(int error, int offset, byte[] segment, long timestamp)
+		public void receiveData(byte[] segment, int offset, long timestamp, long cycle)
+		{
+			if (whatDaq.isMarkedForDelete()) // || receiveError(error))
 				return;
 
 			System.arraycopy(segment, offset, data, whatDaq.offset(), whatDaq.length());
@@ -36,7 +55,7 @@ class PoolSegmentAssembly implements ReceiveData
 
 			if (segmentsReceived.cardinality() == segments.size()) {
 				segmentsReceived.clear();
-				bigWhatDaq.getReceiveData().receiveData(error, 0, data, timestamp);
+				bigWhatDaq.getReceiveData().receiveData(data, 0, timestamp, cycle);
 				bigWhatDaq.setError(0);
 			}
 		}
@@ -81,20 +100,22 @@ class PoolSegmentAssembly implements ReceiveData
 		return "PoolSegmentAssembly: " + bigWhatDaq;
 	}
 
-	private final boolean receiveError(int error)
+	//private final boolean receiveError(int error)
+	private final void receiveError(int error)
 	{
-		if (error != 0) {
+		//if (error != 0) {
 			bigWhatDaq.setError(error);
 
 			if (!bigWhatDaq.isRepetitive()) {
 				for (ReceiveSegment r : segments)
 					r.whatDaq.setMarkedForDelete();
 
-				bigWhatDaq.getReceiveData().receiveData(error, 0, null, System.currentTimeMillis());
-				return true;
+				//bigWhatDaq.getReceiveData().receiveData(error, 0, null, System.currentTimeMillis());
+				bigWhatDaq.getReceiveData().receiveStatus(error, System.currentTimeMillis(), 0);
+		//		return true;
 			}
-		}
+		//}
 
-		return false;
+		//return false;
 	}
 }

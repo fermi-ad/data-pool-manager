@@ -1,5 +1,7 @@
-// $Id: FTPRequest.java,v 1.8 2023/11/03 02:28:02 kingc Exp $
+// $Id: FTPRequest.java,v 1.10 2024/01/16 20:31:15 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
+
+import java.nio.ByteBuffer;
 
 import gov.fnal.controls.servers.dpm.events.AbsoluteTimeEvent;
 import gov.fnal.controls.servers.dpm.events.DataEvent;
@@ -17,26 +19,22 @@ class FTPRequest implements DataEventObserver, ReceiveData
 
 	ReArm reArm;
 
-	protected int priority;
-	protected boolean delete;
-	protected int error;
-	protected int completionParameterId;
+	int priority;
+	boolean delete;
+	int error;
+	int completionParameterId;
 
-	private ReceiveData finalDisposition = null;
+	double ftpRate = 0.0;
 
-	private boolean isClipped = false;
+	double ftpDuration = 0.0;
 
-	protected double ftpRate = 0.0;
+	AbsoluteTimeEvent durationEndingEvent = null;
 
-	protected double ftpDuration = 0.0;
+	AbsoluteTimeEvent reArmEvent = null;
 
-	protected AbsoluteTimeEvent durationEndingEvent = null;
+	int maxPoints = 0;
 
-	protected AbsoluteTimeEvent reArmEvent = null;
-
-	protected int maxPoints = 0;
-
-	protected int nextPoint = 0;
+	int nextPoint = 0;
 
 	private long[] ftpMicroSecs = null;
 
@@ -44,11 +42,11 @@ class FTPRequest implements DataEventObserver, ReceiveData
 
 	private int ftpError = 0;
 
-	protected boolean completed = false;
+	boolean completed = false;
 
-	protected boolean waitArm = false;
+	boolean waitArm = false;
 
-	protected boolean watchArm = false;
+	boolean watchArm = false;
 
 	ReceiveData callback;
 
@@ -61,7 +59,8 @@ class FTPRequest implements DataEventObserver, ReceiveData
 	FTPRequest(WhatDaq userDevice, ClassCode classCode,
 			Trigger userTrigger, FTPScope userScope, ReceiveData callback,
 			ReArm again) {
-		setCallback(callback);
+		//setCallback(callback);
+		this.callback = callback;
 
 		device = userDevice;
 		plotClass = classCode;
@@ -86,21 +85,13 @@ class FTPRequest implements DataEventObserver, ReceiveData
 						System.out.println("FTPRequest, no points, rate: "
 								+ ftpRate + ", duration: " + ftpDuration);
 					} else {
-						isClipped = true;
 						ftpMicroSecs = new long[maxPoints];
 						ftpValues = new double[maxPoints];
-						finalDisposition = callback;
-						setCallback(this);
+						this.callback = this;
 					}
 				}
 			}
 		}
-		//setCollectionPriority(FTPPool.PLOT_PRIORITY_USER);
-	}
-
-	void setCallback(ReceiveData callback)
-	{
-		this.callback = callback;
 	}
 
 	void setCompletionParameterId(int id)
@@ -150,18 +141,10 @@ class FTPRequest implements DataEventObserver, ReceiveData
 		return error;
 	}
 
-	/**
-	 * Mark this request for delete.
-	 */
 	void setDelete() {
 		delete = true;
 	}
 
-	/**
-	 * Return the delete status of this request.
-	 * 
-	 * @return true if this request is marked for delete
-	 */
 	boolean getDelete()
 	{
 		return delete;
@@ -207,11 +190,11 @@ class FTPRequest implements DataEventObserver, ReceiveData
 	void lastCall(boolean forceError, int error)
 	{
 		if (!completed) {
-			sendDispositionPlotData(true, forceError, error);
+			sendCallbackPlotData(true, forceError, error);
 		}
 	}
 
-	void sendDispositionPlotData(boolean lastCall, boolean forceError, int error)
+	void sendCallbackPlotData(boolean lastCall, boolean forceError, int error)
 	{
 		if (!completed) {
 			completed = true;
@@ -225,8 +208,9 @@ class FTPRequest implements DataEventObserver, ReceiveData
 				stopWatchingArmEvents();
 
 			final long now = System.currentTimeMillis();
-			if (finalDisposition != null)
-				finalDisposition.plotData(now, ftpError, nextPoint, ftpMicroSecs, null, ftpValues);
+			
+			callback.plotData(now, ftpError, nextPoint, ftpMicroSecs, null, ftpValues);
+
 			if (!lastCall) {
 				ReArm again = getReArm();
 				if (again == null)
@@ -242,6 +226,12 @@ class FTPRequest implements DataEventObserver, ReceiveData
 			} else
 				setDelete();
 		}
+	}
+
+	@Override
+	public void receiveData(ByteBuffer buf, long timestamp, long cycle)
+	{
+		Thread.dumpStack();
 	}
 
 	@Override
@@ -270,7 +260,7 @@ class FTPRequest implements DataEventObserver, ReceiveData
 				ftpValues[nextPoint++] = values[ii];
 			}
 			if (nextPoint >= maxPoints) {
-				sendDispositionPlotData(false, false, 0);
+				sendCallbackPlotData(false, false, 0);
 			}
 		}
 	}
@@ -280,7 +270,7 @@ class FTPRequest implements DataEventObserver, ReceiveData
 	{
 		if (request == durationEndingEvent) {
 			if (!completed) {
-				sendDispositionPlotData(false, false, 0);
+				sendCallbackPlotData(false, false, 0);
 			}
 		} else if (waitArm && isArmEvent(request)) {
 			if (waitArm)

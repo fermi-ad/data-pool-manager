@@ -1,17 +1,17 @@
-// $Id: SettingDaqPool.java,v 1.8 2023/11/01 20:56:57 kingc Exp $
+// $Id: SettingDaqPool.java,v 1.11 2024/02/22 16:32:14 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.List;
 import java.util.Iterator;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
+import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
 import gov.fnal.controls.servers.dpm.events.DataEvent;
 import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 import gov.fnal.controls.servers.dpm.pools.ReceiveData;
-import gov.fnal.controls.servers.dpm.pools.Node;
 
-public class SettingDaqPool extends OneShotDaqPool implements ReceiveData, Completable, AcnetErrors
+public class SettingDaqPool extends OneShotDaqPool implements Completable, AcnetErrors
 {
 	public SettingDaqPool(Node node)
 	{
@@ -38,7 +38,7 @@ public class SettingDaqPool extends OneShotDaqPool implements ReceiveData, Compl
 		while (url.hasNext()) {
 			userPerhaps = (WhatDaq) url.next();
 			if (userPerhaps.isEqual(whatDaq)) {
-				userPerhaps.getReceiveData().receiveData(DAE_SETTING_SUPERCEDED, 0, null, System.currentTimeMillis());
+				userPerhaps.getReceiveData().receiveStatus(DAE_SETTING_SUPERCEDED, System.currentTimeMillis(), 0);
 				url.remove();
 				break;
 			}
