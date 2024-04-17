@@ -1,4 +1,4 @@
-// $Id: AcceleratorPool.java,v 1.15 2024/03/05 17:26:39 kingc Exp $
+// $Id: AcceleratorPool.java,v 1.16 2024/03/27 21:03:59 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools;
 
 import java.util.List;
@@ -102,7 +102,7 @@ public class AcceleratorPool
 		getPool(whatDaq).addRequest(whatDaq);
 	}
 
-	public void addSetting(WhatDaq whatDaq, SettingData setting)
+	public void addSetting(WhatDaq whatDaq, SettingData setting) throws AcnetStatusException
 	{
 		getPool(whatDaq).addSetting(whatDaq, setting);
 	}

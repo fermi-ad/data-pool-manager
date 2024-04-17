@@ -1,4 +1,4 @@
-// $Id: AcnetInterface.java,v 1.8 2024/03/11 19:08:56 kingc Exp $
+// $Id: AcnetInterface.java,v 1.10 2024/03/22 19:23:09 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class AcnetInterface implements AcnetConstants, AcnetErrors
 
 		logger.log(Level.INFO, "Using vNode '" + vNode + "'");
 
-		boolean bindFailed = false;
+		boolean bindFailed;
 
 		try {
 			final DatagramChannel channel = DatagramChannel.open().bind(new InetSocketAddress(ACNET_PORT));
@@ -55,17 +55,41 @@ public class AcnetInterface implements AcnetConstants, AcnetErrors
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
+			bindFailed = false;
 		} catch (java.io.IOException e) {
+			logger.log(Level.INFO, "Using the ACNET daemon");
+
 			bindFailed = true;
 			AcnetConnectionDaemon.start();
-
-			logger.log(Level.INFO, "Using the ACNET daemon");
+			sendNodeTableEntriesToDaemon();
 		}
 
 		usingDaemon = bindFailed;
 	}
 
-	private static Node getVirtualNode()
+	public static void sendNodeTableEntriesToDaemon()
+	{
+		try {
+			int count = 0;
+			final WeakAcnetConnection c = new WeakAcnetConnection();
+
+			for (Node node : Node.byValue.values())
+				if (node.isValid()) {
+					c.addNode(node);
+					count++;
+				}
+
+			c.lastNode();
+			
+			logger.log(Level.INFO, "Downloaded " + count + " node entries to the ACNET daemon");
+
+			c.close();
+		} catch (AcnetStatusException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static Node getVirtualNode()
 	{
 		try {
 			return Node.get(System.getProperty("vnode", ""));
@@ -74,9 +98,6 @@ public class AcnetInterface implements AcnetConstants, AcnetErrors
 
 			if (nodes.length == 0)
 				throw new RuntimeException("Unable to determine vnode");
-
-			//for (Node node : nodes)
-				//System.out.println(node);
 
 			return nodes[0];
 		}
@@ -172,8 +193,6 @@ public class AcnetInterface implements AcnetConstants, AcnetErrors
 
 	synchronized public static void main(String[] args) throws Exception
 	{
-		System.out.println(AcnetInterface.localhost());
-
-		AcnetInterface.class.wait();
+		System.exit(0);
 	}
 }

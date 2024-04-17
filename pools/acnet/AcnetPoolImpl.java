@@ -1,4 +1,4 @@
-// $Id: AcnetPoolImpl.java,v 1.12 2024/02/22 16:32:14 kingc Exp $
+// $Id: AcnetPoolImpl.java,v 1.15 2024/04/11 19:17:07 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Set;
@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Timer;
+import java.util.logging.Level;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetErrors;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
@@ -25,7 +26,7 @@ import static gov.fnal.controls.servers.dpm.DPMServer.logger;
 
 public class AcnetPoolImpl implements PoolInterface, SettingData.Handler, AcnetErrors
 {
-	static Timer sharedTimer = new Timer("AcnetPoolImpl.sharedTimer");
+	static Timer sharedTimer = new Timer("ACNET pool timer");
 
 	// All requests added to this AcceleratorPool view
 
@@ -58,75 +59,77 @@ public class AcnetPoolImpl implements PoolInterface, SettingData.Handler, AcnetE
 	}
 
 	@Override
-	public void addSetting(WhatDaq whatDaq, SettingData setting)
+	public void addSetting(WhatDaq whatDaq, SettingData setting) throws AcnetStatusException
 	{
 		setting.deliverTo(whatDaq, this);
 	}
 
 	@Override
-	public void handle(WhatDaq whatDaq, byte[] setting)
+	public void handle(WhatDaq whatDaq, byte[] setting) throws AcnetStatusException
 	{
-		try {
+		//try {
+		//logger.log(Level.FINER, "adding " + setting.length + " byte setting to " + whatDaq);
+
 			whatDaq.setSetting(setting);
 			requests.add(whatDaq);
-		} catch (AcnetStatusException e) {
-			whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
-		} catch (Exception e) {
-			whatDaq.getReceiveData().receiveStatus(ACNET_NXE, System.currentTimeMillis(), 0);
-		}
+		//} catch (AcnetStatusException e) {
+		//	whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
+		//} catch (Exception e) {
+		//	whatDaq.getReceiveData().receiveStatus(ACNET_NXE, System.currentTimeMillis(), 0);
+		//}
 	}
 
 	@Override
-	public void handle(WhatDaq whatDaq, double setting)
+	public void handle(WhatDaq whatDaq, double setting) throws AcnetStatusException
 	{
-		try {
+		//try {
 			//whatDaq.setSetting(setting);
 			whatDaq.setSetting(ScalingFactory.get(whatDaq).unscale(setting, whatDaq.length()));
 			requests.add(whatDaq);
-		} catch (AcnetStatusException e) {
-			whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
-		} catch (Exception e) {
-			whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
-		}
+		//} catch (AcnetStatusException e) {
+		//	whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
+		//} catch (Exception e) {
+		//	whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
+		//}
 	}
 
 	@Override
-	public void handle(WhatDaq whatDaq, double[] setting)
+	public void handle(WhatDaq whatDaq, double[] setting) throws AcnetStatusException
 	{
-		try {
+		//try {
 			whatDaq.setSetting(ScalingFactory.get(whatDaq).unscale(setting, whatDaq.defaultLength()));
 			requests.add(whatDaq);
-		} catch (AcnetStatusException e) {
-			whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
-		} catch (Exception e) {
-			whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
-		}
+		//} catch (AcnetStatusException e) {
+		//	whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
+		//} catch (Exception e) {
+		//	whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
+		//}
 	}
 
 	@Override
-	public void handle(WhatDaq whatDaq, String setting)
+	public void handle(WhatDaq whatDaq, String setting) throws AcnetStatusException
 	{
-		try {
+		//try {
 			whatDaq.setSetting(ScalingFactory.get(whatDaq).unscale(setting, whatDaq.length()));
 			requests.add(whatDaq);
-		} catch (AcnetStatusException e) {
-			whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
-		} catch (Exception e) {
-			whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
-		}
+		//} catch (AcnetStatusException e) {
+		//	whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
+		//} catch (Exception e) {
+		//	whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
+		//}
 	}
 
 	@Override
-	public void handle(WhatDaq whatDaq, String[] setting)
+	public void handle(WhatDaq whatDaq, String[] setting) throws AcnetStatusException
 	{
-		try {
+		//try {
 			whatDaq.setSetting(ScalingFactory.get(whatDaq).unscale(setting, whatDaq.defaultLength()));
 			requests.add(whatDaq);
-		} catch (AcnetStatusException e) {
-			whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
-		} catch (Exception e) {
-			whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
-		}
+		//} catch (AcnetStatusException e) {
+		//	whatDaq.getReceiveData().receiveStatus(e.status, System.currentTimeMillis(), 0);
+		//} catch (Exception e) {
+		//	whatDaq.getReceiveData().receiveStatus(DIO_SCALEFAIL, System.currentTimeMillis(), 0);
+		//}
 	}
 
 	@Override
@@ -135,6 +138,8 @@ public class AcnetPoolImpl implements PoolInterface, SettingData.Handler, AcnetE
 		for (WhatDaq whatDaq : requests) {
 			whatDaq.setUser(user);
 			//whatDaq.setUser(poolUser);
+
+			//logger.log(Level.FINER, "AcnetPoolImpl: " + whatDaq);
 
 			if (whatDaq.getEvent().isRepetitive()) { //|| whatDaq.isSettingReady()) {
 				//final DaqPoolUserRequests<WhatDaq> pool =  DaqPool.getPool(whatDaq.getTrunk(), whatDaq.getNode(),
@@ -157,12 +162,13 @@ public class AcnetPoolImpl implements PoolInterface, SettingData.Handler, AcnetE
 					oneshot.put(key, pool);
 				}
 
+				//logger.log(Level.FINER, "AcnetPoolImpl: " + whatDaq + " pool: " + pool);
 				//pool.insert(whatDaq, DPMOneShotDaqPool.NORMAL);
 				pool.insert(whatDaq);
 			}
 		}
 
-		for (DaqPoolUserRequests pool : oneshot.values()) {
+		for (OneShotDaqPool pool : oneshot.values()) {
 			pool.process(true);
 		}
 

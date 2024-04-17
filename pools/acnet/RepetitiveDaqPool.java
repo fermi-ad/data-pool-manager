@@ -1,4 +1,4 @@
-// $Id: RepetitiveDaqPool.java,v 1.16 2024/03/05 17:31:39 kingc Exp $
+// $Id: RepetitiveDaqPool.java,v 1.17 2024/04/11 19:20:07 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Iterator;
@@ -337,15 +337,15 @@ class RepetitiveDaqPool extends DaqPool implements NodeFlags, Completable, Acnet
 		@Override
         synchronized public void run()
 		{
-			logger.log(Level.FINE, () -> String.format("Repetitive pool recovery has %d entries", pools.size()));
+			//logger.log(Level.FINE, () -> String.format("Repetitive pool recovery has %d entries", pools.size()));
 
 			final long now = System.currentTimeMillis();
 
 			for (RepetitiveDaqPool pool : pools.values()) {
 				final boolean resent = pool.recovery(now);
 
-				logger.log(Level.FINE, () -> String.format("Repetitive pool %6d recovery for %-10s event:%-16s entries:%5d action:[%6s]", 
-															pool.id, pool.node.name(), pool.event, pool.requests.size(), resent ? "RESENT" : "")); 
+				//logger.log(Level.FINE, () -> String.format("Repetitive pool %6d recovery for %-10s event:%-16s entries:%5d action:[%6s]", 
+				//											pool.id, pool.node.name(), pool.event, pool.requests.size(), resent ? "RESENT" : "")); 
 
 			}
         }

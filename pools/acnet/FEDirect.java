@@ -1,4 +1,4 @@
-// $Id: FEDirect.java,v 1.3 2024/03/11 18:38:03 kingc Exp $
+// $Id: FEDirect.java,v 1.4 2024/03/18 15:29:03 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import static java.lang.System.out;
@@ -12,7 +12,6 @@ import java.nio.ByteBuffer;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 
-import gov.fnal.controls.acnet.AcnetError;
 
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetInterface;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetConnection;
@@ -22,16 +21,16 @@ import gov.fnal.controls.servers.dpm.acnetlib.AcnetReplyHandler;
 import gov.fnal.controls.servers.dpm.acnetlib.AcnetStatusException;
 import gov.fnal.controls.servers.dpm.acnetlib.Node;
 
-import gov.fnal.controls.servers.dpm.pools.DeviceCache;;
+import gov.fnal.controls.servers.dpm.Errors;
 import gov.fnal.controls.servers.dpm.DPMRequest;
 import gov.fnal.controls.servers.dpm.DataReplier;
 import gov.fnal.controls.servers.dpm.DPMProtocolReplier;
+import gov.fnal.controls.servers.dpm.pools.DeviceCache;
+import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 import gov.fnal.controls.servers.dpm.scaling.DPMAnalogAlarmScaling;
 import gov.fnal.controls.servers.dpm.scaling.DPMDigitalAlarmScaling;
 import gov.fnal.controls.servers.dpm.scaling.DPMBasicStatusScaling;
 import gov.fnal.controls.servers.dpm.events.DataEvent;
-
-import gov.fnal.controls.servers.dpm.pools.WhatDaq;
 
 public class FEDirect extends Thread implements AcnetReplyHandler, DPMProtocolReplier
 {
@@ -356,7 +355,7 @@ public class FEDirect extends Thread implements AcnetReplyHandler, DPMProtocolRe
 			(new FEDirect(whatDaq, args[0])).sendRequest().printRepliesForever();
 		} catch (AcnetStatusException e) {
 			System.out.println();
-			System.out.println("AcnetStatusException: " + AcnetError.getInstance(e.status));			
+			System.out.println("AcnetStatusException: " + Errors.name(e.status));			
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println();

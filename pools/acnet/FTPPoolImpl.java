@@ -1,4 +1,4 @@
-// $Id: FTPPoolImpl.java,v 1.16 2024/02/22 16:32:14 kingc Exp $
+// $Id: FTPPoolImpl.java,v 1.17 2024/03/27 20:59:23 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Set;
@@ -92,7 +92,7 @@ public class FTPPoolImpl implements PoolInterface, SettingData.Handler, AcnetErr
 	}
 
 	@Override
-	public void addSetting(WhatDaq whatDaq, SettingData setting)
+	public void addSetting(WhatDaq whatDaq, SettingData setting) throws AcnetStatusException
 	{
 		setting.deliverTo(whatDaq, this);
 	}

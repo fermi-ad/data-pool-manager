@@ -1,4 +1,4 @@
-// $Id: DeviceCache.java,v 1.7 2024/02/22 16:33:02 kingc Exp $
+// $Id: DeviceCache.java,v 1.8 2024/04/11 20:21:16 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools;
 
 import java.util.Arrays;
@@ -139,13 +139,23 @@ class DBMaps
 		this.alarmListName = alarmListName();
 	}
 
+	String diSet(String preFix)
+	{
+		if (diSet != null && diSet.length() > 0)
+			return preFix + " " + diSet;
+
+		return "";
+	}
+
 	private Map<DIPI, List<DeviceInfo.ReadSetScaling.Common.EnumString>> enumString() throws SQLException
 	{
 		final Map<DIPI, List<DeviceInfo.ReadSetScaling.Common.EnumString>> map = new HashMap<>();
 		final String query = "SELECT di,pi,value,short_name,long_name " +
 								"FROM accdb.read_set_enum_sets S " +
 								"JOIN accdb.read_set_enum_values V ON S.enum_set_id=V.enum_set_id " +
-								"WHERE di IN " + diSet;
+								diSet("WHERE di IN");
+								//(diSet != null ? ("WHERE di IN " + diSet) : "");
+
 		final ResultSet rs = dbServer.executeQuery(query);
 
 		while (rs.next()) {
@@ -168,7 +178,7 @@ class DBMaps
 	private Map<DIPI, String> foreignDevice() throws SQLException
 	{
 		final Map<DIPI, String> map = new HashMap<>();
-		final String query = "SELECT di,pi,pv_name FROM accdb.foreign_device_mapping " + "WHERE di IN " + diSet;
+		final String query = "SELECT di,pi,pv_name FROM accdb.foreign_device_mapping " + diSet("WHERE di IN");//"WHERE di IN " + diSet;
 		final ResultSet rs = dbServer.executeQuery(query);
 
 		while (rs.next()) {
@@ -185,7 +195,10 @@ class DBMaps
 	{
 		final Map<Integer, List<String>> map = new HashMap<>();
 		final String query = "SELECT F.di,D.name FROM accdb.family F LEFT OUTER JOIN accdb.device D ON F.member_di=D.di " +
-								"WHERE F.di IN " + diSet + " ORDER BY F.di,seq";
+								diSet("WHERE F.di IN") + //"WHERE F.di IN " + diSet + 
+								" ORDER BY F.di,seq";
+
+								//System.out.println(query);
 
 		final ResultSet rs = dbServer.executeQuery(query);
 
@@ -213,7 +226,7 @@ class DBMaps
 								"JOIN accdb.scaling_length L " +
 								"ON L.di = C.di " +
 								"WHERE L.pi=28 AND C.order_number<32 " +
-								"AND C.di IN " + diSet +
+								diSet("AND C.di IN") + //"AND C.di IN " + diSet +
 								"ORDER BY C.di,C.order_number";
 
 		final ResultSet rs = getDbServer("adbs").executeQuery(query);
@@ -243,7 +256,7 @@ class DBMaps
 								"JOIN accdb.scaling_length L " +
 								"ON L.di = S.di " +
 								"WHERE L.pi = 33 AND S.order_number < 32 " +
-								"AND S.di IN " + diSet +
+								diSet("AND S.di IN") + //"AND S.di IN " + diSet +
 								" ORDER BY S.di,S.order_number";
 
 		final ResultSet rs = dbServer.executeQuery(query);
@@ -270,7 +283,7 @@ class DBMaps
 		final String query = "SELECT DDS.di,DDS.bit_no,DS.short_name_0,DS.short_name_1,DS.bit_description " +
 								"FROM accdb.digital_status DS,accdb.device_digital_status DDS " +
 								"WHERE DDS.digital_status_id=DS.digital_status_id " +
-								"AND DDS.di IN " + diSet +
+								diSet("AND DDS.di IN") + //"AND DDS.di IN " + diSet +
 								" ORDER BY DDS.di,DDS.bit_no";
 
 		final ResultSet rs = dbServer.executeQuery(query);
@@ -334,6 +347,7 @@ public class DeviceCache implements AcnetErrors, AcnetMessageHandler, Dbnews.Req
 		try {
 			AcnetInterface.open("DBNEWS").setQueueReplies().handleMessages(new DeviceCache());
 			nameMap = getNameMap();
+			//cacheAllDevices();
 		} catch (Exception e) {
 			throw new RuntimeException("exception during startup", e);
 		}
@@ -444,7 +458,7 @@ public class DeviceCache implements AcnetErrors, AcnetMessageHandler, Dbnews.Req
 								"LEFT OUTER JOIN accdb.device_scaling S ON (D.di = S.di and P.pi = S.pi) " +
 								"LEFT OUTER JOIN accdb.device_flags F ON (D.di = F.di and P.pi = F.pi) " +
 								"LEFT OUTER JOIN accdb.device_aux AUX ON (D.di = AUX.di) " +
-								"WHERE D.di IN " + dbMaps.diSet +
+								dbMaps.diSet("WHERE D.di IN") + //"WHERE D.di IN " + dbMaps.diSet +
 								" ORDER BY D.di";
 
 		final ResultSet rs = getDbServer("adbs").executeQuery(query);
@@ -564,6 +578,16 @@ public class DeviceCache implements AcnetErrors, AcnetMessageHandler, Dbnews.Req
 		}
 	}
 
+	public static void cacheAllDevices() throws SQLException
+	{
+		final DbServer dbServer = getDbServer("adbs");
+
+		synchronized (deviceCache) {
+			deviceCache.putAll(getDeviceInfoMap(new DBMaps(dbServer, null)));
+			logger.log(Level.FINE, "DeviceCache: " + deviceCache.size() + " entries");
+		}
+	}
+
 	public static String name(int di) throws DeviceNotFoundException
 	{
 		final Holder h = nameMap.get("0:" + di);
@@ -596,10 +620,32 @@ public class DeviceCache implements AcnetErrors, AcnetMessageHandler, Dbnews.Req
 
 	public static void main(String[] args) throws Exception
 	{
-		gov.fnal.controls.servers.dpm.DPMServer.setLogLevel(Level.CONFIG);
+		//gov.fnal.controls.servers.dpm.DPMServer.setLogLevel(Level.CONFIG);
 		nameMap = getNameMap();
 		gov.fnal.controls.servers.dpm.DPMServer.setLogLevel(Level.FINE);
-		add(args[0]);
-		System.out.println("info " + get(args[0]));
+		//add(args[0]);
+		//System.out.println("info " + get(args[0]));
+
+		//for (final Holder holder : nameMap.values())
+			//System.out.println(holder.name);
+
+		cacheAllDevices();
+
+/*
+		final ArrayList<DPMRequest> list = new ArrayList<>();
+
+		for (Holder holder : nameMap.values()) {
+			System.out.println(holder.name);
+			list.add(new DPMRequest(holder.name));
+
+			if (list.size() > ) {
+				add(list);
+				list.clear();
+			}
+		}
+		
+		if (list.size() > 0)
+			add(list);
+*/
 	}
 }

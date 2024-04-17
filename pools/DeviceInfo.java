@@ -1,4 +1,4 @@
-// $Id: DeviceInfo.java,v 1.3 2024/01/23 23:35:52 kingc Exp $
+// $Id: DeviceInfo.java,v 1.4 2024/03/19 22:11:55 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools;
 
 import java.util.Map;
@@ -54,7 +54,7 @@ public class DeviceInfo
 			this.atomicSize = defSize;
 			this.defEvent = "i";
 			this.nonLinear = false;
-			this.foreignName = null;	
+			this.foreignName = null;
 		}
 
 		@Override public String toString()
@@ -175,7 +175,7 @@ public class DeviceInfo
 		@Override
 		public String toString()
 		{
-			return String.format("Reading(%s, %s)", scaling.primary, scaling.common);
+			return prop + "\n" + String.format("Reading(%s, %s)", scaling.primary, scaling.common);
 		}
 	}
 
@@ -193,7 +193,7 @@ public class DeviceInfo
 		@Override
 		public String toString()
 		{
-			return String.format("Setting(%s, %s)", scaling.primary, scaling.common);
+			return prop + "\n" + String.format("Setting(%s, %s)", scaling.primary, scaling.common);
 		}
 	}
 

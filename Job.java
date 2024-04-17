@@ -1,4 +1,4 @@
-// $Id: Job.java,v 1.109 2024/03/05 17:48:10 kingc Exp $
+// $Id: Job.java,v 1.111 2024/03/27 21:06:49 kingc Exp $
 package gov.fnal.controls.servers.dpm;
 
 import java.util.Set;
@@ -936,12 +936,13 @@ class SettingJob extends Job
 					if (allowedDevices.contains(whatDaq.getDeviceName())) {
 						final SettingStatus status = new SettingStatus(whatDaq);
 
-						settingStatus.add(status);
 						whatDaq.setReceiveData(new ReceiveSettingStatus(status));
 						pool.addSetting(whatDaq, setting);
+						settingStatus.add(status);
 					} else
 						settingStatus.add(new SettingStatus(refId, DPM_PRIV));
 				} catch (AcnetStatusException e) {
+					logger.log(Level.FINER, "Setting exception: " + e.status + " for " + request);
 					settingStatus.add(new SettingStatus(refId, e.status));
 				} catch (Exception e) {
 					settingStatus.add(new SettingStatus(refId, ACNET_SYS));
@@ -952,9 +953,10 @@ class SettingJob extends Job
 
 		pool.processRequests();
 
-		logger.log(Level.FINE, String.format("%s ApplySettings - %d setting(s)", list.id(), settingStatus.size()));
+		logger.log(Level.FINE, String.format("%s ApplySettings - %d setting(s) - %d in pool", list.id(), settingStatus.size(), pool.requests().size()));
 
 		completionCheck();
+
 	}
 
 	@Override
@@ -967,13 +969,16 @@ class SettingJob extends Job
 	{
 		if (!completed) {
 			logger.log(Level.FINE, String.format("%s CompletionCheck - %d setting(s)", list.id(), settingStatus.size()));
-		
+
 			for (SettingStatus ss : settingStatus) {
 				if (!ss.completed())
 					return;
 			}
 
+			logger.log(Level.FINE, String.format("%s CompletionCheck - setting(s) complete", list.id()));
+
 			completed = true;
+
 			// XXX Let consoles (privileged) do the logging for now
 
 			if (!list.allowPrivilegedSettings())

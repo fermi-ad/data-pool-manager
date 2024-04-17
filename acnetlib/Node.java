@@ -1,4 +1,4 @@
-// $Id: Node.java,v 1.2 2024/03/05 17:51:19 kingc Exp $
+// $Id: Node.java,v 1.3 2024/03/19 22:13:05 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.sql.ResultSet;
 
@@ -26,6 +27,14 @@ public class Node implements NodeFlags, AcnetErrors
 
 	static {
 		System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$-8s %1$tF %1$tT %1$tL] %5$s %6$s%n");
+	}
+
+	Node()
+	{
+		this.value = 0;
+		this.name = "";
+		this.address = null;
+		this.flags = null;
 	}
 	
 	private Node(int value, String name, String host) 
@@ -111,6 +120,17 @@ public class Node implements NodeFlags, AcnetErrors
 	public String name()
 	{
 		return name;
+	}
+
+	final public boolean isValid()
+	{
+		if (address != null) {
+			final InetAddress addr = address.getAddress();
+
+			return addr instanceof Inet4Address && addr.getAddress() != null;
+		}
+
+		return false;
 	}
 
 	public boolean is(int flagNo)

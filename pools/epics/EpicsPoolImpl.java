@@ -1,4 +1,4 @@
-// $Id: EpicsPoolImpl.java,v 1.10 2024/02/22 16:33:02 kingc Exp $
+// $Id: EpicsPoolImpl.java,v 1.11 2024/03/27 21:16:40 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.epics;
 
 import java.util.HashMap;
@@ -223,7 +223,7 @@ public class EpicsPoolImpl implements PoolInterface, SettingData.Handler, AcnetE
 	}
 
 	@Override
-	public void addSetting(WhatDaq whatDaq, SettingData setting)
+	public void addSetting(WhatDaq whatDaq, SettingData setting) throws AcnetStatusException
 	{
 		setting.deliverTo(whatDaq, this);
 	}

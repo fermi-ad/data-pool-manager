@@ -1,4 +1,4 @@
-// $Id: OneShotDaqPool.java,v 1.11 2024/02/22 16:32:14 kingc Exp $
+// $Id: OneShotDaqPool.java,v 1.12 2024/03/27 20:58:32 kingc Exp $
 package gov.fnal.controls.servers.dpm.pools.acnet;
 
 import java.util.Iterator;
@@ -99,7 +99,7 @@ class OneShotDaqPool extends DaqPool implements Completable, AcnetErrors
 			xtrans = DaqSendFactory.getDaqSendInterface(node, event, isSetting(), this, event.defaultTimeout());
 			xtrans.begin();
 		} catch (Exception e) {
-			logger.log(Level.FINE, "exception", e);
+			logger.log(Level.FINE, "OneShotDaqPool: exception", e);
 			return false;
 		}
 

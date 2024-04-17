@@ -1,4 +1,4 @@
-// $Id: AcnetConnectionUDP.java,v 1.4 2024/03/06 15:38:57 kingc Exp $
+// $Id: AcnetConnectionUDP.java,v 1.6 2024/04/01 15:30:49 kingc Exp $
 package gov.fnal.controls.servers.dpm.acnetlib;
 
 import java.util.Iterator;
@@ -16,6 +16,34 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.DatagramChannel;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+class WeakAcnetConnection extends AcnetConnectionUDP
+{
+	WeakAcnetConnection()
+	{
+		super();
+	}
+
+	final synchronized void addNode(String name, int node, byte[] addr) throws AcnetStatusException
+	{
+		cmdBuf.clear();
+		cmdBuf.put(addr);
+		cmdBuf.putInt(0);
+		cmdBuf.putShort((short) node);
+		cmdBuf.putInt(Rad50.encode(name));
+		sendCommand(10, 0, null);
+	}
+
+	final synchronized void addNode(Node node) throws AcnetStatusException
+	{
+		addNode(node.name, node.value, node.address.getAddress().getAddress());
+	}
+
+	final synchronized void lastNode() throws AcnetStatusException
+	{
+		addNode("", 0, new byte[] { 0, 0, 0, 0 });
+	}
+}
+
 class AcnetConnectionUDP extends AcnetConnectionDaemon
 {
 	final static class DataThread extends Thread
@@ -28,7 +56,7 @@ class AcnetConnectionUDP extends AcnetConnectionDaemon
 			try {
 				sel = Selector.open();
 				regQ = new ConcurrentLinkedQueue<AcnetConnectionUDP>();
-				setName("AcnetConnectionUDP.DataThread");
+				setName("ACNET data");
 				start();
 			} catch (Exception e) {
 				throw new RuntimeException("unable to create ACNET data thread");
@@ -116,6 +144,13 @@ class AcnetConnectionUDP extends AcnetConnectionDaemon
 		connectionMonitor.register(this);
     }
 
+	AcnetConnectionUDP()
+	{
+		super("", new Node());
+
+		openChannels();
+	}
+
 	@Override
 	boolean inDataHandler()
 	{
@@ -201,7 +236,7 @@ class AcnetConnectionUDP extends AcnetConnectionDaemon
 		return ackBuf;
     }
 
-	private final synchronized void openChannels()
+	final synchronized void openChannels()
 	{
 		try {
 			InetAddress loopback = InetAddress.getLoopbackAddress();
